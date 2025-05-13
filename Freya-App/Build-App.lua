@@ -35,7 +35,6 @@ project "App"
 
    links
    {
-      "Core",
 	  "freetype.lib",
       "opengl32.lib",
       "winmm.lib",

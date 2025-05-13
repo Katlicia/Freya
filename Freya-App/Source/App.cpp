@@ -314,7 +314,7 @@ int main()
         if (cizimModu)
         {
             sf::Vector2f yeniPoz = window.mapPixelToCoords(sf::Mouse::getPosition(window), view1) - canvasSprite.getPosition();
-
+                
             if (oncekiPoz != yeniPoz)
             {
                 sf::Vertex line[] =

@@ -3,6 +3,9 @@
 #include <imgui.h>
 #include <imgui-SFML.h>
 #include <memory>
+#include "../Tools/DrawingTool.h"
+#include "../Tools/Canvas.h"
+#include <iostream>
 
 class Canvas;
 class DrawingTool;
@@ -27,6 +30,10 @@ namespace FRE {
 
 		std::unique_ptr<Canvas> m_Canvas;
 		std::unique_ptr<DrawingTool> m_DrawingTool;
+
+		sf::View m_View;
+
+		sf::VideoMode desktop;
 
 		bool m_IsRunning;
 	};

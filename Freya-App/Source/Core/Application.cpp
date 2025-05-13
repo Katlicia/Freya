@@ -2,14 +2,26 @@
 
 using namespace FRE;
 
-Application::Application() : m_Window(sf::VideoMode({ sf::VideoMode::getDesktopMode().size.x, sf::VideoMode::getDesktopMode().size.y }), "Freya", sf::Style::Default),
-  m_Canvas(nullptr),
-  m_DrawingTool(nullptr),
-  m_IsRunning(true)
+Application::Application()
+	: desktop(sf::VideoMode::getDesktopMode()),
+
+	m_Window(sf::VideoMode({ desktop.size.x, desktop.size.y }),
+		"Freya", sf::Style::Default),
+
+	m_View(sf::FloatRect({ 0.f, 0.f },
+		{ static_cast<float>(desktop.size.x), static_cast<float>(desktop.size.y) })),
+
+	m_Canvas(nullptr),
+	m_DrawingTool(nullptr),
+	m_IsRunning(true)
 {
 	m_Window.setVerticalSyncEnabled(true);
-	ImGui::SFML::Init(m_Window);
-	// SMART PTR Kullan
+	if (!ImGui::SFML::Init(m_Window))
+	{
+		std::cerr << "Failed to initialize ImGui-SFML" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
 	m_Canvas = std::make_unique<Canvas>();
 	m_DrawingTool = std::make_unique<DrawingTool>(*m_Canvas);
 }
@@ -38,22 +50,34 @@ void Application::ProcessEvents()
 	{
 		if (event->is<sf::Event::Closed>())
 			m_IsRunning = false;
+
+		m_DrawingTool->HandleEvent(*event, m_Window, m_View);
+
+		if (const auto* resized = event->getIf<sf::Event::Resized>())
+		{
+			sf::Vector2u newSize = resized->size;
+			sf::Vector2f currentCenter = m_View.getCenter();
+			m_View.setSize({ float(newSize.x), float(newSize.y) });
+			m_View.setCenter(currentCenter);
+			m_Window.setView(m_View);
+		}
 	}
 }
 
 void Application::Update(sf::Time deltaTime)
 {
 	ImGui::SFML::Update(m_Window, deltaTime);
-
-	m_DrawingTool->Update(m_Window); // giriþ olaylarýný buraya gönderiyoruz
+	m_DrawingTool->Update(m_Window, m_View); // Input Events
+	m_Canvas->Update(m_Window, m_View); // Update canvas
 }
 
 void Application::Render()
 {
 	m_Window.clear(sf::Color::White);
 
-	m_Canvas->Draw(m_Window); // sadece canvas çiziyor
+	//m_Canvas->Draw(m_Window); // sadece canvas çiziyor
 	ImGui::SFML::Render(m_Window);
+	m_Window.draw(m_Canvas->getSprite()); // Draw canvas as sprite
 
 	m_Window.display();
 }
