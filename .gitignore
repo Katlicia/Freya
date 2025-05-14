@@ -12,3 +12,5 @@ Makefile
 
 # Exclude
 !Vendor/Binaries
+
+todo.txt

@@ -78,8 +78,3 @@ void Canvas::Update(const sf::RenderWindow& window, const sf::View& view)
 	offset.y = viewCenter.y - (canvasSizeF.y / 2.f);
 	m_Sprite->setPosition(offset);
 }
-
-void Canvas::Draw(const sf::RenderWindow& window)
-{
-	/*window.draw()*/
-}

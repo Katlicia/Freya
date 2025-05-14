@@ -2,20 +2,28 @@
 
 using namespace FRE;
 
-Application::Application()
-	: desktop(sf::VideoMode::getDesktopMode()),
-
-	m_Window(sf::VideoMode({ desktop.size.x, desktop.size.y }),
-		"Freya", sf::Style::Default),
-
-	m_View(sf::FloatRect({ 0.f, 0.f },
-		{ static_cast<float>(desktop.size.x), static_cast<float>(desktop.size.y) })),
-
+Application::Application() :
 	m_Canvas(nullptr),
 	m_DrawingTool(nullptr),
+	m_UI(nullptr),
 	m_IsRunning(true)
 {
+	desktop = sf::VideoMode::getDesktopMode();
+
+	m_Window = sf::RenderWindow(sf::VideoMode({ desktop.size.x, desktop.size.y }),
+		"Freya", sf::Style::Default);
+
+	m_View = sf::View(sf::FloatRect({ 0.f, 0.f },
+		{ static_cast<float>(desktop.size.x), static_cast<float>(desktop.size.y) }));
+
+	if (desktop.size.x < 800 || desktop.size.y < 600)
+	{
+		std::cerr << "Warning: desktop resolution too small or invalid. Falling back.\n";
+		desktop = sf::VideoMode({ 1920, 1080 });
+	}
+
 	m_Window.setVerticalSyncEnabled(true);
+
 	if (!ImGui::SFML::Init(m_Window))
 	{
 		std::cerr << "Failed to initialize ImGui-SFML" << std::endl;
@@ -24,20 +32,20 @@ Application::Application()
 
 	m_Canvas = std::make_unique<Canvas>();
 	m_DrawingTool = std::make_unique<DrawingTool>(*m_Canvas);
+	m_UI = std::make_unique<UI>(m_Window);
 }
 
 Application::~Application()
 {
-	ImGui::SFML::Shutdown();
+
 }
 
 
 void Application::Run()
 {
 	while (m_IsRunning && m_Window.isOpen())
-	{
+	{	
 		sf::Time deltaTime = m_DeltaClock.restart();
-
 		ProcessEvents();
 		Update(deltaTime);
 		Render();
@@ -49,9 +57,10 @@ void Application::ProcessEvents()
 	while (const std::optional event = m_Window.pollEvent())
 	{
 		if (event->is<sf::Event::Closed>())
-			m_IsRunning = false;
+			m_Window.close();
+			/*m_IsRunning = false;*/
 
-		m_DrawingTool->HandleEvent(*event, m_Window, m_View);
+		m_DrawingTool->HandleEvent(*event, m_Window, m_View); // Handle input events for drawing tool
 
 		if (const auto* resized = event->getIf<sf::Event::Resized>())
 		{
@@ -61,23 +70,24 @@ void Application::ProcessEvents()
 			m_View.setCenter(currentCenter);
 			m_Window.setView(m_View);
 		}
+
+		m_UI->HandleEvent(*event); // Pass event to UI
 	}
 }
 
 void Application::Update(sf::Time deltaTime)
 {
-	ImGui::SFML::Update(m_Window, deltaTime);
+	m_UI->Update(deltaTime); // Update UI
 	m_DrawingTool->Update(m_Window, m_View); // Input Events
 	m_Canvas->Update(m_Window, m_View); // Update canvas
 }
 
 void Application::Render()
 {
-	m_Window.clear(sf::Color::White);
-
-	//m_Canvas->Draw(m_Window); // sadece canvas çiziyor
-	ImGui::SFML::Render(m_Window);
+	m_Window.clear(m_BackgroundColor);
 	m_Window.draw(m_Canvas->getSprite()); // Draw canvas as sprite
+	// Render UI
+	m_UI->Render(m_Window);
 
 	m_Window.display();
 }

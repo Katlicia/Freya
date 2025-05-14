@@ -10,12 +10,17 @@ DrawingTool::DrawingTool(Canvas& canvas)
 
 void DrawingTool::HandleEvent(const sf::Event& event, const sf::RenderWindow& window, const sf::View& view)
 {
+	sf::Vector2f mouseWorldPos = window.mapPixelToCoords(sf::Mouse::getPosition(window), view);
+	sf::FloatRect canvasBounds = m_Canvas.getSprite().getGlobalBounds();
     if (const auto* mouseEvent = event.getIf<sf::Event::MouseButtonPressed>())
     {
         if (mouseEvent->button == sf::Mouse::Button::Left)
         {
-			m_IsDrawing = true;
-			m_LastPosition = window.mapPixelToCoords(sf::Mouse::getPosition(window), view) - m_Canvas.getSprite().getPosition();
+			if (canvasBounds.contains(mouseWorldPos)) // If mouse is in canvas
+			{
+				m_IsDrawing = true;
+				m_LastPosition = mouseWorldPos - m_Canvas.getSprite().getPosition();
+			}
         }
     }
 
@@ -31,7 +36,7 @@ void DrawingTool::Update(const sf::RenderWindow& window, const sf::View& view)
 	if (m_IsDrawing)
 	{
 		sf::Vector2f newPosition = window.mapPixelToCoords(sf::Mouse::getPosition(window), view) - m_Canvas.getSprite().getPosition();
-		// Eðer pozisyon deðiþtiyse yeni çizgi noktasý ekle
+		// If position changed add new line
 		if (m_LastPosition != newPosition)
 		{
 			sf::Vertex line[] =

@@ -262,87 +262,111 @@
 //    return 0;
 //}
 
-#include <SFML/Graphics.hpp>
+//#include <SFML/Graphics.hpp>
+//#include <iostream>
+//
+//int main()
+//{
+//    sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+//
+//    sf::RenderWindow window(sf::VideoMode({ desktop.size.x, desktop.size.y }), "Freya", sf::Style::Default);
+//    window.setFramerateLimit(120);
+//
+//    sf::View view1(sf::FloatRect({ 0.f, 0.f }, { float(desktop.size.x), float(desktop.size.y) }));
+//    window.setView(view1);
+//
+//    sf::RenderTexture canvas({ 800, 600 });
+//    canvas.clear(sf::Color::Green);
+//
+//    sf::Sprite canvasSprite(canvas.getTexture());
+//
+//    bool cizimModu = false;
+//    sf::Vector2f oncekiPoz;
+//
+//    while (window.isOpen())
+//    {
+//        while (const std::optional event = window.pollEvent())
+//        {
+//            if (event->is<sf::Event::Closed>())
+//                window.close();
+//
+//            if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>())
+//            {
+//                cizimModu = true;
+//                oncekiPoz = window.mapPixelToCoords(sf::Mouse::getPosition(window), view1) - canvasSprite.getPosition();
+//            }
+//
+//            if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonReleased>())
+//            {
+//                cizimModu = false;
+//            }
+//
+//            if (const auto* resized = event->getIf<sf::Event::Resized>())
+//            {
+//                sf::Vector2u newSize = resized->size;
+//                sf::Vector2f currentCenter = view1.getCenter();
+//                view1.setSize({ float(newSize.x), float(newSize.y) });
+//                view1.setCenter(currentCenter);
+//                window.setView(view1);
+//            }
+//        }
+//
+//        if (cizimModu)
+//        {
+//            sf::Vector2f yeniPoz = window.mapPixelToCoords(sf::Mouse::getPosition(window), view1) - canvasSprite.getPosition();
+//                
+//            if (oncekiPoz != yeniPoz)
+//            {
+//                sf::Vertex line[] =
+//                {
+//                    sf::Vertex(oncekiPoz, sf::Color::Black),
+//                    sf::Vertex(yeniPoz, sf::Color::Black)
+//                };
+//                canvas.draw(line, 2, sf::PrimitiveType::Lines);
+//                oncekiPoz = yeniPoz;
+//            }
+//        }
+//
+//        // Canvas'ý güncelle ve sprite'a referansla baðla
+//        canvas.display();
+//        canvasSprite.setTexture(canvas.getTexture(), true);  // true: yeniden boyutlandýr
+//
+//        // Yeni ekran boyutuna göre canvas'ý ortala
+//        sf::Vector2f viewCenter = view1.getCenter();
+//        sf::Vector2f canvasSizeF = static_cast<sf::Vector2f>(canvas.getSize());
+//        sf::Vector2f offset;
+//        offset.x = viewCenter.x - (canvasSizeF.x / 2.f);
+//        offset.y = viewCenter.y - (canvasSizeF.y / 2.f);
+//        canvasSprite.setPosition(offset);
+//
+//        window.clear(sf::Color::White);
+//        window.draw(canvasSprite);
+//        window.display();
+//    }
+//
+//    return 0;
+//}
+
+#include "Core/Application.h"
 #include <iostream>
+#include <exception>
 
 int main()
 {
-    sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-
-    sf::RenderWindow window(sf::VideoMode({ desktop.size.x, desktop.size.y }), "Freya", sf::Style::Default);
-    window.setFramerateLimit(120);
-
-    sf::View view1(sf::FloatRect({ 0.f, 0.f }, { float(desktop.size.x), float(desktop.size.y) }));
-    window.setView(view1);
-
-    sf::RenderTexture canvas({ 800, 600 });
-    canvas.clear(sf::Color::Green);
-
-    sf::Sprite canvasSprite(canvas.getTexture());
-
-    bool cizimModu = false;
-    sf::Vector2f oncekiPoz;
-
-    while (window.isOpen())
+    try
     {
-        while (const std::optional event = window.pollEvent())
-        {
-            if (event->is<sf::Event::Closed>())
-                window.close();
-
-            if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>())
-            {
-                cizimModu = true;
-                oncekiPoz = window.mapPixelToCoords(sf::Mouse::getPosition(window), view1) - canvasSprite.getPosition();
-            }
-
-            if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonReleased>())
-            {
-                cizimModu = false;
-            }
-
-            if (const auto* resized = event->getIf<sf::Event::Resized>())
-            {
-                sf::Vector2u newSize = resized->size;
-                sf::Vector2f currentCenter = view1.getCenter();
-                view1.setSize({ float(newSize.x), float(newSize.y) });
-                view1.setCenter(currentCenter);
-                window.setView(view1);
-            }
-        }
-
-        if (cizimModu)
-        {
-            sf::Vector2f yeniPoz = window.mapPixelToCoords(sf::Mouse::getPosition(window), view1) - canvasSprite.getPosition();
-                
-            if (oncekiPoz != yeniPoz)
-            {
-                sf::Vertex line[] =
-                {
-                    sf::Vertex(oncekiPoz, sf::Color::Black),
-                    sf::Vertex(yeniPoz, sf::Color::Black)
-                };
-                canvas.draw(line, 2, sf::PrimitiveType::Lines);
-                oncekiPoz = yeniPoz;
-            }
-        }
-
-        // Canvas'ý güncelle ve sprite'a referansla baðla
-        canvas.display();
-        canvasSprite.setTexture(canvas.getTexture(), true);  // true: yeniden boyutlandýr
-
-        // Yeni ekran boyutuna göre canvas'ý ortala
-        sf::Vector2f viewCenter = view1.getCenter();
-        sf::Vector2f canvasSizeF = static_cast<sf::Vector2f>(canvas.getSize());
-        sf::Vector2f offset;
-        offset.x = viewCenter.x - (canvasSizeF.x / 2.f);
-        offset.y = viewCenter.y - (canvasSizeF.y / 2.f);
-        canvasSprite.setPosition(offset);
-
-        window.clear(sf::Color::White);
-        window.draw(canvasSprite);
-        window.display();
+        FRE::Application app;
+        app.Run();
+        return EXIT_SUCCESS;
     }
-
-    return 0;
+    catch (const std::exception& e)
+    {
+        std::cerr << "Fatal error: " << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch (...)
+    {
+        std::cerr << "Unknown fatal error occurred" << std::endl;
+        return EXIT_FAILURE;
+    }
 }

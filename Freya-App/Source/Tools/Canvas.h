@@ -15,7 +15,6 @@ namespace FRE {
 		sf::Sprite& getSprite();
 		sf::RenderTexture& getRenderTexture();
 		void Update(const sf::RenderWindow& window, const sf::View& view);
-		void Draw(const sf::RenderWindow& window);
 
 	private:
 		sf::RenderTexture m_RenderTexture;
