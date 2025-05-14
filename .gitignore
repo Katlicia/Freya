@@ -13,4 +13,6 @@ Makefile
 # Exclude
 !Vendor/Binaries
 
+**/imgui.ini
+
 todo.txt
