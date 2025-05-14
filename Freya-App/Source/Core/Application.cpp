@@ -24,15 +24,17 @@ Application::Application() :
 
 	m_Window.setVerticalSyncEnabled(true);
 
-	if (!ImGui::SFML::Init(m_Window))
-	{
-		std::cerr << "Failed to initialize ImGui-SFML" << std::endl;
-		exit(EXIT_FAILURE);
+	m_LanguageManager = std::make_unique<LocalizationManager>();
+	m_Language = m_LanguageManager->GetSystemLanguage();
+	if (!m_LanguageManager->Load("Source/Assets/lang_" + m_Language + ".json")) {
+		std::cerr << "Error: Could not load language file: lang_" + m_Language + ".json" << std::endl;
+		return;
 	}
 
+	m_UI = std::make_unique<UI>(m_Window, *m_LanguageManager);
 	m_Canvas = std::make_unique<Canvas>();
 	m_DrawingTool = std::make_unique<DrawingTool>(*m_Canvas);
-	m_UI = std::make_unique<UI>(m_Window);
+	m_DrawingTool->SetColor(m_UI->GetColor());
 }
 
 Application::~Application()
@@ -80,6 +82,7 @@ void Application::Update(sf::Time deltaTime)
 	m_UI->Update(deltaTime); // Update UI
 	m_DrawingTool->Update(m_Window, m_View); // Input Events
 	m_Canvas->Update(m_Window, m_View); // Update canvas
+	m_DrawingTool->SetColor(m_UI->GetColor()); // Update drawing tool color
 }
 
 void Application::Render()

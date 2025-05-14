@@ -1,4 +1,5 @@
 #include "DrawingTool.h"
+#include <iostream>
 
 using namespace FRE;
 
@@ -41,11 +42,17 @@ void DrawingTool::Update(const sf::RenderWindow& window, const sf::View& view)
 		{
 			sf::Vertex line[] =
 			{
-				sf::Vertex(m_LastPosition, sf::Color::Black),
-				sf::Vertex(newPosition, sf::Color::Black)
+				sf::Vertex(m_LastPosition, m_Color),
+				sf::Vertex(newPosition, m_Color)
 			};
 			m_Canvas.getRenderTexture().draw(line, 2, sf::PrimitiveType::Lines);
 			m_LastPosition = newPosition;
 		}
 	}
+}
+
+void DrawingTool::SetColor(sf::Color color)
+{
+	//std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;
+	m_Color = color;
 }
