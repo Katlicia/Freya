@@ -8,6 +8,7 @@ Application::Application() :
 	m_UI(nullptr),
 	m_IsRunning(true)
 {
+	// Get monitor resolution
 	desktop = sf::VideoMode::getDesktopMode();
 
 	m_Window = sf::RenderWindow(sf::VideoMode({ desktop.size.x, desktop.size.y }),
@@ -35,6 +36,12 @@ Application::Application() :
 	m_Canvas = std::make_unique<Canvas>();
 	m_DrawingTool = std::make_unique<DrawingTool>(*m_Canvas);
 	m_DrawingTool->SetColor(m_UI->GetColor());
+	
+	m_InitialZoom = 1.f;
+	m_MaxZoom = 1.f;
+	m_MinZoom = 0.1f;
+	m_InitialViewSize = m_View.getSize();
+
 }
 
 Application::~Application()
@@ -60,7 +67,7 @@ void Application::ProcessEvents()
 	{
 		if (event->is<sf::Event::Closed>())
 			m_Window.close();
-			/*m_IsRunning = false;*/
+			/*m_IsRunning = false;*/ // (Crashes) FIX BUG
 
 		m_DrawingTool->HandleEvent(*event, m_Window, m_View); // Handle input events for drawing tool
 
@@ -74,22 +81,77 @@ void Application::ProcessEvents()
 		}
 
 		m_UI->HandleEvent(*event); // Pass event to UI
+
+		if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+		{
+			if (keyPressed->scancode == sf::Keyboard::Scancode::Z)
+			{
+				m_DrawingTool->SetThickness(m_DrawingTool->GetThickness() + 1);
+			}
+		}
+
+		if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+		{
+			if (keyPressed->scancode == sf::Keyboard::Scancode::X)
+			{
+				m_DrawingTool->SetThickness(m_DrawingTool->GetThickness() - 1);
+			}
+		}
+
+		//if (const auto* wheelScroll = event->getIf<sf::Event::MouseWheelScrolled>())
+		//{
+		//	if (wheelScroll->wheel == sf::Mouse::Wheel::Vertical)
+		//	{
+		//		// Calculate current zoom level based on the initial view size
+		//		float currentZoom = m_View.getSize().x / m_InitialViewSize.x;
+
+		//		if (wheelScroll->delta > 0)
+		//		{
+		//			if (currentZoom > m_MinZoom)
+		//			{
+		//				float zoomFactor = 0.9f;
+		//				if (currentZoom * zoomFactor < m_MinZoom)
+		//				{
+		//					zoomFactor = m_MinZoom / currentZoom;
+		//				}
+		//				m_View.zoom(zoomFactor);
+		//			}
+		//		}
+		//		else if (wheelScroll->delta < 0)
+		//		{
+
+		//			if (currentZoom < m_MaxZoom)
+		//			{
+		//				float zoomFactor = 1.1f;
+		//				if (currentZoom * zoomFactor > m_MaxZoom)
+		//				{
+		//					zoomFactor = m_MaxZoom / currentZoom;
+		//				}
+		//				m_View.zoom(zoomFactor);
+		//			}
+		//		}
+		//	}
+		//}
 	}
 }
 
 void Application::Update(sf::Time deltaTime)
 {
-	m_UI->Update(deltaTime); // Update UI
-	m_DrawingTool->Update(m_Window, m_View); // Input Events
-	m_Canvas->Update(m_Window, m_View); // Update canvas
+	m_UI->Update(deltaTime);
+	m_DrawingTool->Update(m_Window, m_View);
+	m_Canvas->Update(m_Window, m_View);
 	m_DrawingTool->SetColor(m_UI->GetColor()); // Update drawing tool color
+	m_DrawingTool->SetThickness(m_UI->GetBrushSize()); // Update drawing tool thickness
 }
 
 void Application::Render()
 {
 	m_Window.clear(m_BackgroundColor);
-	m_Window.draw(m_Canvas->getSprite()); // Draw canvas as sprite
+	m_Window.setView(m_View);
+	m_Window.draw(m_Canvas->getSprite());
+	
 	// Render UI
+	m_Window.setView(m_Window.getDefaultView());
 	m_UI->Render(m_Window);
 
 	m_Window.display();

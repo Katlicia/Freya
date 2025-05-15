@@ -26,6 +26,7 @@ namespace FRE {
 		void ProcessEvents();
 		void Update(sf::Time deltaTime);
 		void Render();
+
 		sf::VideoMode desktop;
 
 		sf::RenderWindow m_Window;
@@ -39,6 +40,10 @@ namespace FRE {
 		std::string m_Language;
 
 		sf::View m_View;
+		float m_InitialZoom;
+		float m_MaxZoom;
+		float m_MinZoom;
+		sf::Vector2f m_InitialViewSize;
 
 		sf::Color Grey = sf::Color(74, 76, 84);
 		sf::Color m_BackgroundColor = Grey;

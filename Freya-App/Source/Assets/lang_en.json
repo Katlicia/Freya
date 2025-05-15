@@ -1,6 +1,6 @@
 {
-  "title": "Color Picker",
-  "color_label": "Choose a color",
-  "save_button": "Save",
-  "cancel_button": "Cancel"
+"Titles": 0,
+
+	"color_picker_title": "Color Picker",
+	"tool_title": "Tools"
 }

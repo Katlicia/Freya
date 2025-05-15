@@ -17,6 +17,8 @@ namespace FRE {
 		sf::Color GetColor();
 		sf::Color ConvertToSFMLColor();
 
+		float GetBrushSize();
+
 	private:
 		void ShowMainMenuBar();
 		void ShowToolPanel();
@@ -37,12 +39,19 @@ namespace FRE {
 		};
 
 		float m_Color[4] = { (float)0 / 255, (float)0 / 255, (float)0 / 255 , (float) 255 / 255 };
+		float m_OriginalColor[4] = { (float)0 / 255, (float)0 / 255, (float)0 / 255 , (float) 255 / 255 };
 
 		AnchorType m_toolBarCurrentAnchor = AnchorType::Right;
 		ImVec2 m_toolPanelPos = ImVec2(0, 0);
 		ImVec2 m_toolPanelSize = ImVec2(100.f, 500.f);
 		bool m_isPanelSizeInitialized = false;
 		bool m_isDragging = false;
+
+		// Tool Components
+
+		int m_BrushSize = 1;
+		float m_Hardness = 1.f;
+		float m_Spacing = 1.f;
 	};
 }
 

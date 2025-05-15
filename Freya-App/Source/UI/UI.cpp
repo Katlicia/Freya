@@ -26,7 +26,7 @@ void UI::HandleEvent(const sf::Event& event) {
 
 void UI::Render(sf::RenderWindow& window) {
 	//ShowMainMenuBar();
-	//ShowToolPanel();
+	ShowToolPanel();
 	ShowStatusBar();
 	ShowColorPicker();
 	ImGui::SFML::Render(window);
@@ -48,6 +48,174 @@ void UI::ShowMainMenuBar() {
 
 		ImGui::EndMainMenuBar();
 	}
+}
+
+void UI::ShowStatusBar() {
+	
+	float statusBarHeight = 20.0f;
+
+	ImGui::SetNextWindowPos(ImVec2(-5, -5));
+	ImGui::SetNextWindowSize(ImVec2(100, statusBarHeight));
+	ImGui::SetNextWindowBgAlpha(0.0f);
+	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 255));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	//ImGui::GetFont()->Scale = 1.0f;
+	//ImGui::PushFont(ImGui::GetFont());
+	
+
+	ImGui::Begin("Status", nullptr, ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+	ImGui::Text("FPS:%.f", ImGui::GetIO().Framerate);
+	ImGui::PopStyleColor();
+	ImGui::PopStyleVar();
+	//ImGui::PopFont();
+
+	ImGui::End();
+}
+
+//void UI::ShowToolPanel() {
+//	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+//	ImGui::SetNextWindowSize(ImVec2(m_Window.getSize().x, 40.0f), ImGuiCond_Always);
+//
+//	ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+//		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
+//		ImGuiWindowFlags_NoSavedSettings;
+//
+//	ImGui::Begin("Toolbar", nullptr, flags);
+//
+//	ImGui::Text("%s", m_LanguageManager.Get("tool_title").c_str());
+//
+//	ImGui::SameLine(150);
+//	ImGui::Text("%s", m_LanguageManager.Get("brush_size").c_str());
+//
+//	ImGui::SameLine();
+//	ImGui::PushItemWidth(150);
+//	ImGui::SliderInt("##BrushSize", &m_BrushSize, 1, 100);
+//	ImGui::PopItemWidth();
+//
+//	//const char* sizes[] = { "1", "2", "4", "8", "16", "32", "64" };
+//	//static int current = 2; // varsayýlan 4
+//	//ImGui::SameLine();
+//	//ImGui::Combo("##BrushSizeCombo", &current, sizes, IM_ARRAYSIZE(sizes));
+//	//m_BrushSize = std::stoi(sizes[current]);
+//
+//
+//	ImGui::End();
+//}
+
+void UI::ShowColorPicker() {
+    ImGuiIO& io = ImGui::GetIO();
+	const float snapThreshold = 20.0f; // Snap when within 20 pixels of the edge
+    const ImVec2 windowSize = ImVec2(350, 305);
+    const ImVec2 padding = ImVec2(10, 10);
+	const ImVec2 desiredPos = ImVec2(0.0f, io.DisplaySize.y - windowSize.y);
+	ImGui::SetNextWindowPos(desiredPos, ImGuiCond_FirstUseEver);
+	
+    ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
+    ImGui::Begin(m_LanguageManager.Get("color_picker_title").c_str(), nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings);
+
+    // Snap logic:
+    ImVec2 pos = ImGui::GetWindowPos();
+    ImVec2 size = ImGui::GetWindowSize();
+
+    bool changed = false;
+
+    if (pos.x <= snapThreshold) {
+        pos.x = 0.0f;
+        changed = true;
+    }
+    else if (pos.x + size.x >= io.DisplaySize.x - snapThreshold) {
+        pos.x = io.DisplaySize.x - size.x;
+        changed = true;
+    }
+
+    if (pos.y <= snapThreshold) {
+        pos.y = 0.0f;
+        changed = true;
+    }
+    else if (pos.y + size.y >= io.DisplaySize.y - snapThreshold) {
+        pos.y = io.DisplaySize.y - size.y;
+        changed = true;
+    }
+
+    if (changed) {
+        ImGui::SetWindowPos(pos);
+    }
+
+    ImGui::ColorPicker4("##picker_popup", m_Color, ImGuiColorEditFlags_AlphaBar);
+    ImGui::End();
+}
+
+void UI::ShowToolPanel() {
+	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(ImVec2(m_Window.getSize().x, 50.0f), ImGuiCond_Always);
+
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
+		ImGuiWindowFlags_NoSavedSettings;
+
+	ImGui::Begin("Toolbar", nullptr, flags);
+
+	ImGui::PushItemWidth(150);
+
+
+	ImVec2 currentCurPos = ImGui::GetCursorPos();
+
+	// Brush Size
+	ImGui::Text(m_LanguageManager.Get("brush_size").c_str());
+	ImGui::SliderInt("##BrushSize", &m_BrushSize, 1, 100);
+
+	ImVec2 pos2(currentCurPos.x + 170, currentCurPos.y);
+	ImGui::SetCursorPos(pos2);
+
+	// Opacity (0.0 - 1.0)
+	ImGui::Text(m_LanguageManager.Get("opacity").c_str());
+	ImGui::SetCursorPos(ImVec2(pos2.x, pos2.y + 17));
+	ImGui::SliderFloat("##Opacity", &m_Color[3], 0.0f, 1.f);
+
+	ImGui::SetCursorPos(ImVec2(currentCurPos.x + 340, pos2.y));
+
+	// Hardness (0.0 - 1.0)
+	ImGui::Text(m_LanguageManager.Get("hardness").c_str());
+	ImGui::SetCursorPos(ImVec2(currentCurPos.x + 340, pos2.y + 17));
+	ImGui::SliderFloat("##Hardness", &m_Hardness, 0.0f, 1.f);
+
+	ImGui::SetCursorPos(ImVec2(currentCurPos.x + 510, pos2.y));
+
+	// Spacing (0.0 - 1.0)
+	ImGui::Text(m_LanguageManager.Get("spacing").c_str());
+	ImGui::SetCursorPos(ImVec2(currentCurPos.x + 510, pos2.y + 17));
+	ImGui::SliderFloat("##Spacing", &m_Spacing, 0.0f, 1.f);
+
+	// Color
+	ImGui::SetCursorPos(ImVec2(currentCurPos.x + 680, pos2.y));
+
+	ImGui::Text(m_LanguageManager.Get("color").c_str());
+	ImGui::SetCursorPos(ImVec2(currentCurPos.x + 680, pos2.y + 17));
+	ImGui::ColorEdit4("##Color", m_Color, ImGuiColorEditFlags_NoInputs);
+
+	ImGui::PopItemWidth();
+
+	ImGui::End();
+}
+
+
+
+sf::Color UI::GetColor() 
+{
+   return ConvertToSFMLColor();
+}
+
+float UI::GetBrushSize() {
+	return (float)m_BrushSize;
+}
+
+sf::Color UI::ConvertToSFMLColor() {
+	return sf::Color((int)(m_Color[0] * 255),
+		(int)(m_Color[1] * 255),
+		(int)(m_Color[2] * 255),
+        (int)(m_Color[3] * 255));
 }
 
 //void UI::ShowToolPanel() {
@@ -250,84 +418,3 @@ void UI::ShowMainMenuBar() {
 //    ImGui::End();
 //    ImGui::PopStyleVar();
 //}
-
-void UI::ShowStatusBar() {
-	
-	float statusBarHeight = 20.0f;
-
-	ImGui::SetNextWindowPos(ImVec2(-5, -5));
-	ImGui::SetNextWindowSize(ImVec2(100, statusBarHeight));
-	ImGui::SetNextWindowBgAlpha(0.0f);
-	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 255));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-	//ImGui::GetFont()->Scale = 1.0f;
-	//ImGui::PushFont(ImGui::GetFont());
-	
-
-	ImGui::Begin("Status", nullptr, ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
-		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
-	ImGui::Text("FPS:%.f", ImGui::GetIO().Framerate);
-	ImGui::PopStyleColor();
-	ImGui::PopStyleVar();
-	//ImGui::PopFont();
-
-	ImGui::End();
-}
-
-void UI::ShowColorPicker() {
-    ImGuiIO& io = ImGui::GetIO();
-	const float snapThreshold = 20.0f; // Snap when within 20 pixels of the edge
-    const ImVec2 windowSize = ImVec2(350, 305);
-    const ImVec2 padding = ImVec2(10, 10);
-	const ImVec2 desiredPos = ImVec2(0.0f, io.DisplaySize.y - windowSize.y);
-	ImGui::SetNextWindowPos(desiredPos, ImGuiCond_FirstUseEver);
-	
-    ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
-    ImGui::Begin(m_LanguageManager.Get("title").c_str(), nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings);
-
-    // Snap logic:
-    ImVec2 pos = ImGui::GetWindowPos();
-    ImVec2 size = ImGui::GetWindowSize();
-
-    bool changed = false;
-
-    if (pos.x <= snapThreshold) {
-        pos.x = 0.0f;
-        changed = true;
-    }
-    else if (pos.x + size.x >= io.DisplaySize.x - snapThreshold) {
-        pos.x = io.DisplaySize.x - size.x;
-        changed = true;
-    }
-
-    if (pos.y <= snapThreshold) {
-        pos.y = 0.0f;
-        changed = true;
-    }
-    else if (pos.y + size.y >= io.DisplaySize.y - snapThreshold) {
-        pos.y = io.DisplaySize.y - size.y;
-        changed = true;
-    }
-
-    if (changed) {
-        ImGui::SetWindowPos(pos);
-    }
-
-    ImGui::ColorPicker4("##picker_popup", m_Color, ImGuiColorEditFlags_AlphaBar);
-    ImGui::End();
-}
-
-
-
-sf::Color UI::GetColor() 
-{
-   return ConvertToSFMLColor();
-}
-
-sf::Color UI::ConvertToSFMLColor() {
-	return sf::Color((int)(m_Color[0] * 255),
-		(int)(m_Color[1] * 255),
-		(int)(m_Color[2] * 255),
-        (int)(m_Color[3] * 255));
-}
