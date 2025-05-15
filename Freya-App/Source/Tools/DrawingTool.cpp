@@ -11,11 +11,11 @@ DrawingTool::DrawingTool(Canvas& canvas)
 
 void DrawingTool::HandleEvent(const sf::Event& event, const sf::RenderWindow& window, const sf::View& view)
 {
-    // Mouse koordinatlarýný dünya (world) koordinatýna çevir
+    // Convert mouse coordinates to world coordinates
     sf::Vector2f mouseWorldPos = window.mapPixelToCoords(sf::Mouse::getPosition(window), view);
     sf::FloatRect canvasBounds = m_Canvas.GetSprite().getGlobalBounds();
 
-    // Sadece canvas alaný içinde baþlarsa çizime izin ver
+    // Allow drawing only if it starts within the canvas area
     if (const auto* mouseEvent = event.getIf<sf::Event::MouseButtonPressed>())
     {
         if (mouseEvent->button == sf::Mouse::Button::Left)
@@ -24,8 +24,9 @@ void DrawingTool::HandleEvent(const sf::Event& event, const sf::RenderWindow& wi
             {
                 m_IsDrawing = true;
                 m_LastPosition = mouseWorldPos - m_Canvas.GetSprite().getPosition();
+                m_AccumulatedDistance = 0.f; // Reset accumulated distance when starting new drawing
 
-                // Baþlangýç noktasý daire olarak çizilir
+                // Starting point is drawn as a circle
                 sf::CircleShape dot(m_Thickness);
                 dot.setFillColor(m_Color);
                 dot.setPosition(m_LastPosition - sf::Vector2f(m_Thickness, m_Thickness));
@@ -49,19 +50,59 @@ void DrawingTool::Update(const sf::RenderWindow& window, const sf::View& view)
     if (m_LastPosition == newPosition)
         return;
 
-    // Brush kalýnlýðý kadar çevresine çizgiler çiz
-    for (int dx = -static_cast<int>(m_Thickness); dx <= static_cast<int>(m_Thickness); ++dx) {
-        for (int dy = -static_cast<int>(m_Thickness); dy <= static_cast<int>(m_Thickness); ++dy) {
-            if (dx * dx + dy * dy <= m_Thickness * m_Thickness) { // dairesel fýrça etkisi
-                sf::Vector2f offset(static_cast<float>(dx), static_cast<float>(dy));
+    // Calculate the distance to be used for spacing
+    float distanceMoved = std::sqrt(std::pow(newPosition.x - m_LastPosition.x, 2) +
+        std::pow(newPosition.y - m_LastPosition.y, 2));
 
-                sf::Vertex line[] = {
-                    sf::Vertex(m_LastPosition + offset, m_Color),
-                    sf::Vertex(newPosition + offset, m_Color)
-                };
+    // Calculate spacing distance for integer spacing value (0-500)
+    // Continuous drawing when Spacing is 0, maximum spacing when 500
+    float spacingDistance = 0.f;
+    if (m_Spacing > 0) {
+        // Calculate distance based on brush thickness and spacing value
+        // As the spacing value increases, the dot spacing also increases
+        spacingDistance = m_Thickness * (1.0f + m_Spacing * 0.05f);
+    }
 
-                m_Canvas.GetRenderTexture().draw(line, 2, sf::PrimitiveType::Lines);
+    m_AccumulatedDistance += distanceMoved;
+
+    // Draw if accumulated distance reaches spacing distance or spacing is 0
+    if (m_AccumulatedDistance >= spacingDistance || m_Spacing == 0)
+    {
+        // If spacing is active and enough distance has accumulated, draw as dots
+        if (m_Spacing > 0)
+        {
+            // Draw dots instead of lines
+            sf::CircleShape dot(m_Thickness);
+            dot.setFillColor(m_Color);
+            dot.setPosition(newPosition - sf::Vector2f(m_Thickness, m_Thickness));
+            m_Canvas.GetRenderTexture().draw(dot);
+
+            // Decrease accumulated distance as you move by multiples of the spacing distance
+            while (m_AccumulatedDistance >= spacingDistance)
+            {
+                m_AccumulatedDistance -= spacingDistance;
             }
+        }
+        else // If Spacing is 0 draw normal line
+        {
+            // Draw lines around the brush thickness
+            for (int dx = -static_cast<int>(m_Thickness); dx <= static_cast<int>(m_Thickness); ++dx) {
+                for (int dy = -static_cast<int>(m_Thickness); dy <= static_cast<int>(m_Thickness); ++dy) {
+                    if (dx * dx + dy * dy <= m_Thickness * m_Thickness) { // Circular brush effect
+                        sf::Vector2f offset(static_cast<float>(dx), static_cast<float>(dy));
+
+                        sf::Vertex line[] = {
+                            sf::Vertex(m_LastPosition + offset, m_Color),
+                            sf::Vertex(newPosition + offset, m_Color)
+                        };
+
+                        m_Canvas.GetRenderTexture().draw(line, 2, sf::PrimitiveType::Lines);
+                    }
+                }
+            }
+
+            // Reset accumulated distance for continuous drawing mode
+            m_AccumulatedDistance = 0.f;
         }
     }
 
@@ -83,6 +124,6 @@ float DrawingTool::GetThickness()
 	return m_Thickness;
 }
 
-void DrawingTool::SetSpacing(float spacing) {
-    m_Spacing = std::max(1.f, spacing);
+void DrawingTool::SetSpacing(int spacing) {
+    m_Spacing = std::max(0, spacing);
 }

@@ -17,14 +17,15 @@ namespace FRE {
 
 		void SetColor(sf::Color color);
 		void SetThickness(float thickness);
-		void SetSpacing(float spacing);
+		void SetSpacing(int spacing);
 
 	private:
 		Canvas& m_Canvas;
 		bool m_IsDrawing = false;
 		float m_Thickness = 1.f;
 		float m_MaxThickness = 100.f;
-		float m_Spacing = 1.f;
+		int m_Spacing = 0;
+		float m_AccumulatedDistance = 0.f; // Spacing için birikmiþ mesafe takibi
 
 		sf::Vector2f m_LastPosition;
 		sf::Color m_Color;

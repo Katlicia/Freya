@@ -187,7 +187,7 @@ void UI::ShowToolPanel() {
 	// Spacing (0.0 - 1.0)
 	ImGui::Text(m_LanguageManager.Get("spacing").c_str());
 	ImGui::SetCursorPos(ImVec2(currentCurPos.x + 340, pos2.y + fontSize));
-	ImGui::SliderFloat("##Spacing", &m_Spacing, 0.0f, 1.f);
+	ImGui::SliderInt("##Spacing", &m_Spacing, 0, 500);
 
 	// Color
 	ImGui::SetCursorPos(ImVec2(currentCurPos.x + 510, pos2.y));

@@ -54,7 +54,7 @@ namespace FRE {
 		// Tool Components
 
 		int m_BrushSize = 1;
-		float m_Spacing = 1.f;
+		int m_Spacing = 0;
 
 	};
 }
