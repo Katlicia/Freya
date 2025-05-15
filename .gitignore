@@ -14,6 +14,7 @@ Makefile
 !Vendor/Binaries
 
 **/imgui.ini
-Freya-app/imgui.ini
+Freya-App/imgui.ini
+Freya-App/test.png
 
 todo.txt

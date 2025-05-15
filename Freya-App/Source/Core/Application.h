@@ -32,10 +32,12 @@ namespace FRE {
 		sf::RenderWindow m_Window;
 		sf::Clock m_DeltaClock;
 
+		
 		std::unique_ptr<Canvas> m_Canvas;
 		std::unique_ptr<DrawingTool> m_DrawingTool;
 		std::unique_ptr<UI> m_UI;
 		std::unique_ptr<LocalizationManager> m_LanguageManager;
+
 
 		std::string m_Language;
 

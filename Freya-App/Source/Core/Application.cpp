@@ -94,7 +94,7 @@ void Application::ProcessEvents()
 		{
 			if (keyPressed->scancode == sf::Keyboard::Scancode::X)
 			{
-				m_DrawingTool->SetThickness(m_DrawingTool->GetThickness() - 1);
+				m_Canvas->ExportToPNG("test.png");
 			}
 		}
 
@@ -142,13 +142,15 @@ void Application::Update(sf::Time deltaTime)
 	m_Canvas->Update(m_Window, m_View);
 	m_DrawingTool->SetColor(m_UI->GetColor()); // Update drawing tool color
 	m_DrawingTool->SetThickness(m_UI->GetBrushSize()); // Update drawing tool thickness
+	m_DrawingTool->SetSpacing(m_UI->GetSpacing()); // Update drawing tool spacing
 }
 
 void Application::Render()
 {
 	m_Window.clear(m_BackgroundColor);
 	m_Window.setView(m_View);
-	m_Window.draw(m_Canvas->getSprite());
+	m_Canvas->DrawTransparencyPattern(m_Window);
+	m_Window.draw(m_Canvas->GetSprite());
 	
 	// Render UI
 	m_Window.setView(m_Window.getDefaultView());

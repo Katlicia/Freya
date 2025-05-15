@@ -1,6 +1,10 @@
 {
-"Titles": 0,
-
 	"color_picker_title": "Color Picker",
-	"tool_title": "Tools"
+	"tool_title": "Tools",
+
+	"brush_size": "Brush Size",
+	"opacity": "Opacity",
+	"hardness": "Hardness",
+	"spacing": "Spacing",
+	"color": "Color"
 }

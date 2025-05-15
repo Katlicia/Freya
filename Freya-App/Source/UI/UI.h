@@ -18,6 +18,7 @@ namespace FRE {
 		sf::Color ConvertToSFMLColor();
 
 		float GetBrushSize();
+		float GetSpacing();
 
 	private:
 		void ShowMainMenuBar();
@@ -26,6 +27,9 @@ namespace FRE {
 		void ShowColorPicker();
 		sf::RenderWindow& m_Window;
 		LocalizationManager m_LanguageManager;
+
+		float fontSize;
+		float maxFontSize = 30.f;
 
 		// UI State variables
 		const float SNAP_DISTANCE = 100.f;
@@ -50,8 +54,8 @@ namespace FRE {
 		// Tool Components
 
 		int m_BrushSize = 1;
-		float m_Hardness = 1.f;
 		float m_Spacing = 1.f;
+
 	};
 }
 

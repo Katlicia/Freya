@@ -8,18 +8,28 @@ namespace FRE {
 	public:
 		Canvas();
 		Canvas(unsigned int width, unsigned height);
+		void Update(const sf::RenderWindow& window, const sf::View& view);
+		void Display();
 		void DrawLine(const sf::Vector2f& start, const sf::Vector2f& end, const sf::Color& color);
 		void Clear(const sf::Color& color);
-		void Display();
 		sf::Vector2u GetSize();
-		sf::Sprite& getSprite();
-		sf::RenderTexture& getRenderTexture();
-		void Update(const sf::RenderWindow& window, const sf::View& view);
+		sf::Sprite& GetSprite();
+		sf::RenderTexture& GetRenderTexture();
+
+		bool ExportToPNG(const std::string& filename);
+
+		void CreateTransparencyPattern();
+		void DrawTransparencyPattern(sf::RenderTarget& target);
+
 
 	private:
 		sf::RenderTexture m_RenderTexture;
 		sf::Vector2u m_Size;
 		std::optional<sf::Sprite> m_Sprite;
+
+		sf::Texture m_TransparencyPatternTexture;
+		std::optional<sf::Sprite> m_TransparencyPatternSprite;
+		bool m_HasTransparencyPattern = false;
 	};
 
 }
