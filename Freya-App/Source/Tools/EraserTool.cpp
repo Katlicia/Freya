@@ -45,9 +45,12 @@ void EraserTool::HandleEvent(const sf::Event& event, const sf::RenderWindow& win
     }
 }
 
-void EraserTool::Update(const sf::RenderWindow& window, const sf::View& view)
+void EraserTool::Update(const sf::RenderWindow& window, const sf::View& view, UI& ui)
 {
     if (!m_IsErasing) return;
+
+    SetThickness(ui.GetBrushSize()); // Update eraser tool thickness
+    SetSpacing(ui.GetSpacing()); // Update eraser tool spacing
 
     sf::Vector2f newPosition = window.mapPixelToCoords(sf::Mouse::getPosition(window), view) - m_Canvas.GetSprite().getPosition();
 

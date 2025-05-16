@@ -13,7 +13,7 @@ UI::UI(sf::RenderWindow& window, LocalizationManager languageManager) : m_Window
 	ImGuiIO io = ImGui::GetIO();
 
 	static const ImWchar turkish_chars[] = {
-	0x20, 0x7F,       // Latin temel karakterler
+	0x20, 0x7F,       // Latin characters
 	0x011E, 0x011F,   // Ð, ð
 	0x0130, 0x0131,   // Ý, ý
 	0x015E, 0x015F,   // Þ, þ
@@ -45,6 +45,19 @@ void UI::Update(sf::Time deltaTime) {
 
 void UI::HandleEvent(const sf::Event& event) {
 	ImGui::SFML::ProcessEvent(m_Window, event);
+
+	if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
+	{
+		if (keyPressed->scancode == sf::Keyboard::Scancode::P)
+		{
+			m_BrushType = BrushType::BRUSH;
+		}
+
+		if (keyPressed->scancode == sf::Keyboard::Scancode::E)
+		{
+			m_BrushType = BrushType::ERASER;
+		}
+	}
 }
 
 void UI::Render(sf::RenderWindow& window) {
@@ -190,18 +203,19 @@ void UI::ShowToolPanel() {
 	ImGui::SliderInt("##Spacing", &m_Spacing, 0, 500);
 
 	// Color
-	ImGui::SetCursorPos(ImVec2(currentCurPos.x + 510, pos2.y));
+	if (m_BrushType != BrushType::ERASER)
+	{
+		ImGui::SetCursorPos(ImVec2(currentCurPos.x + 510, pos2.y));
 
-	ImGui::Text(m_LanguageManager.Get("color").c_str());
-	ImGui::SetCursorPos(ImVec2(currentCurPos.x + 510, pos2.y + fontSize));
-	ImGui::ColorEdit4("##Color", m_Color, ImGuiColorEditFlags_NoInputs);
+		ImGui::Text(m_LanguageManager.Get("color").c_str());
+		ImGui::SetCursorPos(ImVec2(currentCurPos.x + 510, pos2.y + fontSize));
+		ImGui::ColorEdit4("##Color", m_Color, ImGuiColorEditFlags_NoInputs);
+	}
 
 	ImGui::PopItemWidth();
 
 	ImGui::End();
 }
-
-
 
 sf::Color UI::GetColor() 
 {
@@ -215,6 +229,7 @@ float UI::GetBrushSize() {
 float UI::GetSpacing() {
 	return m_Spacing;
 }
+
 sf::Color UI::ConvertToSFMLColor() {
 	return sf::Color(
 		static_cast<std::uint8_t>(m_Color[0] * 255),
@@ -222,6 +237,10 @@ sf::Color UI::ConvertToSFMLColor() {
 		static_cast<std::uint8_t>(m_Color[2] * 255),
 		static_cast<std::uint8_t>(m_Color[3] * 255)
 	);
+}
+
+BrushType UI::GetBrushType() {
+	return m_BrushType;
 }
 
 //void UI::ShowToolPanel() {

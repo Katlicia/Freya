@@ -5,6 +5,7 @@ using namespace FRE;
 Application::Application() :
 	m_Canvas(nullptr),
 	m_DrawingTool(nullptr),
+	m_EraserTool(nullptr),
 	m_UI(nullptr),
 	m_IsRunning(true)
 {
@@ -36,13 +37,13 @@ Application::Application() :
 	m_Canvas = std::make_unique<Canvas>();
 	m_DrawingTool = std::make_unique<DrawingTool>(*m_Canvas);
 	m_EraserTool = std::make_unique<EraserTool>(*m_Canvas);
-	m_DrawingTool->SetColor(m_UI->GetColor());
+	m_LastBrush = m_UI->GetBrushType();
+	m_ActiveTool = m_DrawingTool.get();
 	
 	m_InitialZoom = 1.f;
 	m_MaxZoom = 1.f;
 	m_MinZoom = 0.1f;
 	m_InitialViewSize = m_View.getSize();
-
 }
 
 Application::~Application()
@@ -68,10 +69,6 @@ void Application::ProcessEvents()
 	{
 		if (event->is<sf::Event::Closed>())
 			m_Window.close();
-			/*m_IsRunning = false;*/ // (Crashes) FIX BUG
-
-		if (m_draw) m_DrawingTool->HandleEvent(*event, m_Window, m_View); // Handle input events for drawing tool
-		else m_EraserTool->HandleEvent(*event, m_Window, m_View); // Handle input events for eraser tool
 
 		if (const auto* resized = event->getIf<sf::Event::Resized>())
 		{
@@ -82,24 +79,6 @@ void Application::ProcessEvents()
 			m_Window.setView(m_View);
 		}
 
-		m_UI->HandleEvent(*event); // Pass event to UI
-
-		if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-		{
-			if (keyPressed->scancode == sf::Keyboard::Scancode::Z)
-			{
-				m_draw = not m_draw;
-			}
-		}
-
-		if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-		{
-			if (keyPressed->scancode == sf::Keyboard::Scancode::B)
-			{
-				m_EraserTool->SetThickness(50.f);
-			}
-		}
-
 		if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
 		{
 			if (keyPressed->scancode == sf::Keyboard::Scancode::X)
@@ -107,6 +86,33 @@ void Application::ProcessEvents()
 				m_Canvas->ExportToPNG("test.png");
 			}
 		}
+
+		if (m_LastBrush != m_CurrentBrush) {
+			switch (m_CurrentBrush) {
+			case BrushType::BRUSH:
+				m_ActiveTool = m_DrawingTool.get();
+				break;
+			case BrushType::ERASER:
+				m_ActiveTool = m_EraserTool.get();
+				break;
+			}
+			m_LastBrush = m_CurrentBrush;
+		}
+
+		m_ActiveTool->HandleEvent(*event, m_Window, m_View); // Handle input events for active tool
+
+
+		m_UI->HandleEvent(*event); // Pass event to UI
+
+		//if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+		//{
+		//	if (keyPressed->scancode == sf::Keyboard::Scancode::E)
+		//	{
+		//		m_draw = !m_draw; // Toggle between drawing and erasing
+		//		/*m_EraserTool->SetThickness(50.f);*/
+		//	}
+		//}
+
 
 		//if (const auto* wheelScroll = event->getIf<sf::Event::MouseWheelScrolled>())
 		//{
@@ -148,12 +154,20 @@ void Application::ProcessEvents()
 void Application::Update(sf::Time deltaTime)
 {
 	m_UI->Update(deltaTime);
-	m_DrawingTool->Update(m_Window, m_View);
-	m_EraserTool->Update(m_Window, m_View);
+	m_CurrentBrush = m_UI->GetBrushType();
+
+	if (m_ActiveTool) {
+		m_ActiveTool->SetThickness(m_UI->GetBrushSize());
+		m_ActiveTool->SetSpacing(m_UI->GetSpacing());
+		if (m_CurrentBrush == BrushType::BRUSH)
+			m_ActiveTool->SetColor(m_UI->GetColor());
+	}
+
+	if (m_ActiveTool)
+		m_ActiveTool->Update(m_Window, m_View, *m_UI);
+
 	m_Canvas->Update(m_Window, m_View);
-	m_DrawingTool->SetColor(m_UI->GetColor()); // Update drawing tool color
-	m_DrawingTool->SetThickness(m_UI->GetBrushSize()); // Update drawing tool thickness
-	m_DrawingTool->SetSpacing(m_UI->GetSpacing()); // Update drawing tool spacing
+
 }
 
 void Application::Render()

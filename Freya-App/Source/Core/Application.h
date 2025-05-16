@@ -4,11 +4,12 @@
 #include <imgui-SFML.h>
 #include <memory>
 #include <iostream>
-#include "../Tools/DrawingTool.h"
-#include "../Tools/Canvas.h"
-#include "../Tools/EraserTool.h"
-#include "../UI/UI.h"
+#include "Tools/DrawingTool.h"
+#include "Tools/Canvas.h"
+#include "Tools/EraserTool.h"
+#include "UI/UI.h"
 #include "LocalizationManager.h"
+#include "Tools/BrushType.h"
 
 class Canvas;
 class DrawingTool;
@@ -40,8 +41,12 @@ namespace FRE {
 		std::unique_ptr<UI> m_UI;
 		std::unique_ptr<LocalizationManager> m_LanguageManager;
 		
-
 		bool m_draw = true;
+
+		BrushType m_LastBrush;
+		BrushType m_CurrentBrush;
+
+		Tool* m_ActiveTool = m_DrawingTool.get();
 
 		std::string m_Language;
 

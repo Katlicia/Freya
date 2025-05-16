@@ -42,9 +42,13 @@ void DrawingTool::HandleEvent(const sf::Event& event, const sf::RenderWindow& wi
     }
 }
 
-void DrawingTool::Update(const sf::RenderWindow& window, const sf::View& view)
+void DrawingTool::Update(const sf::RenderWindow& window, const sf::View& view, UI& ui)
 {
     if (!m_IsDrawing) return;
+
+    SetColor(ui.GetColor());
+    SetThickness(ui.GetBrushSize());
+    SetSpacing(ui.GetSpacing());
 
     sf::Vector2f newPosition = window.mapPixelToCoords(sf::Mouse::getPosition(window), view) - m_Canvas.GetSprite().getPosition();
 

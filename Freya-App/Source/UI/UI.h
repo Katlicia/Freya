@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <imgui-SFML.h>
 #include <Core/LocalizationManager.h>
+#include "Tools/BrushType.h"
 
 namespace FRE {
 	class UI
@@ -19,6 +20,8 @@ namespace FRE {
 
 		float GetBrushSize();
 		float GetSpacing();
+
+		BrushType GetBrushType();
 
 	private:
 		void ShowMainMenuBar();
@@ -41,6 +44,8 @@ namespace FRE {
 			Right,
 			None
 		};
+
+		BrushType m_BrushType = BrushType::BRUSH;
 
 		float m_Color[4] = { (float)0 / 255, (float)0 / 255, (float)0 / 255 , (float) 255 / 255 };
 		float m_OriginalColor[4] = { (float)0 / 255, (float)0 / 255, (float)0 / 255 , (float) 255 / 255 };

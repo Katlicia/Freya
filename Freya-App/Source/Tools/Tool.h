@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Canvas.h"
+#include "UI/UI.h"
 
 namespace FRE {
 
@@ -13,7 +14,7 @@ namespace FRE {
 
         // Basic functions that must be implemented for each tool
         virtual void HandleEvent(const sf::Event& event, const sf::RenderWindow& window, const sf::View& view) = 0;
-        virtual void Update(const sf::RenderWindow& window, const sf::View& view) = 0;
+        virtual void Update(const sf::RenderWindow& window, const sf::View& view, UI& ui) = 0;
 
         // Common features that can be found in all tools
         virtual void SetColor(sf::Color color) { m_Color = color; }

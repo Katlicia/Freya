@@ -13,17 +13,15 @@
 
 class LocalizationManager {
 public:
-    // Yükleme fonksiyonu
     bool Load(const std::string& filename);
 
-    // Çeviri alma fonksiyonu
+    // Translation import function
     std::string Get(const std::string& key) const;
 
-    // Sistem dilini alma fonksiyonu
     static std::string GetSystemLanguage();
 
 private:
-    nlohmann::json m_Translations;  // JSON veri yapýsý
+    nlohmann::json m_Translations;  // JSON data structure
 };
 
 #endif // LOCALIZATION_MANAGER_H
