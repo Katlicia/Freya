@@ -20,16 +20,23 @@ UI::UI(sf::RenderWindow& window, LocalizationManager languageManager) : m_Window
 	0x00C7, 0x00E7,   // Ç, ç
 	0x00D6, 0x00F6,   // Ö, ö
 	0x00DC, 0x00FC,   // Ü, ü
+	0x00B0, 0x00B0,   // ° (degree sign)
 	0, 0              // end
 	};
+
+	static const ImWchar* glyph_ranges = io.Fonts->GetGlyphRangesDefault(); // Default glyph ranges
 
 	ImFontConfig font_cfg;
 	font_cfg.OversampleH = 2;
 	font_cfg.OversampleV = 2;
 
-	fontSize = 20.f;
+    if (m_LanguageManager.GetSystemLanguage() == "tr")
+	{
+		glyph_ranges  = turkish_chars;
+	}
 
-	ImFont* font1 = io.Fonts->AddFontFromFileTTF("Source\\Assets\\Poppins-Regular.ttf", fontSize, &font_cfg, turkish_chars);
+
+	ImFont* font1 = io.Fonts->AddFontFromFileTTF("Source\\Assets\\Poppins-Regular.ttf", (float)fontSize, &font_cfg, glyph_ranges);
 
 	ImGui::SFML::UpdateFontTexture();
 }
@@ -40,6 +47,12 @@ UI::~UI()
 }
 
 void UI::Update(sf::Time deltaTime) {
+    if (m_pendingFontSizeChange)
+    {
+        SetFontSize(fontSize);
+        m_pendingFontSizeChange = false;
+    }
+
 	ImGui::SFML::Update(m_Window, deltaTime);
 }
 
@@ -61,54 +74,185 @@ void UI::HandleEvent(const sf::Event& event) {
 }
 
 void UI::Render(sf::RenderWindow& window) {
-	//ShowMainMenuBar();
+	ShowMainMenuBar();
 	ShowToolPanel();
-	//ShowStatusBar();
 	ShowColorPicker();
 	ShowToolBar();
 	ImGui::SFML::Render(window);
 }
 
 void UI::ShowMainMenuBar() {
-	if (ImGui::BeginMenuBar()) {
-		if (ImGui::BeginMenu("File")) {
-			if (ImGui::MenuItem("Exit")) {
-				// Exit application
-			}
-			ImGui::EndMenu();
-		}
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu(m_LanguageManager.Get("file").c_str()))
+        {
+            if (ImGui::MenuItem(m_LanguageManager.Get("new").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("open").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("save").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("import").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("export").c_str())) 
+            {
+                SetExport(true);
+            }
+            ImGui::EndMenu();
+        }
 
-		if (ImGui::BeginMenu("View")) {
-			ImGui::MenuItem("Tool Panel", nullptr);
-			ImGui::EndMenu();
-		}
+        if (ImGui::BeginMenu(m_LanguageManager.Get("edit").c_str()))
+        {
+            if (ImGui::MenuItem(m_LanguageManager.Get("undo").c_str())) { /* ... */ }
+            ImGui::EndMenu();
+        }
 
-		ImGui::EndMainMenuBar();
-	}
-}
+        if (ImGui::BeginMenu(m_LanguageManager.Get("view").c_str()))
+        {
+            if (ImGui::MenuItem(m_LanguageManager.Get("zoomin").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("zoomout").c_str())) { /* ... */ }
+            ImGui::EndMenu();
+        }
+        }
 
-void UI::ShowStatusBar() {
-	
-	float statusBarHeight = 20.0f;
+        if (ImGui::BeginMenu(m_LanguageManager.Get("display").c_str()))
+        {
+            if (ImGui::MenuItem(m_LanguageManager.Get("resize").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("horizontal_turn").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("vertical_turn").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("90_clock_rotate").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("90_counterclock_rotate").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("180_rotate").c_str())) { /* ... */ }
 
-	ImGui::SetNextWindowPos(ImVec2(-5, -5));
-	ImGui::SetNextWindowSize(ImVec2(100, statusBarHeight));
-	ImGui::SetNextWindowBgAlpha(0.0f);
-	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 255));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-	//ImGui::GetFont()->Scale = 1.0f;
-	//ImGui::PushFont(ImGui::GetFont());
-	
+            ImGui::EndMenu();
+        }
 
-	ImGui::Begin("Status", nullptr, ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
-		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
-	ImGui::Text("FPS:%.f", ImGui::GetIO().Framerate);
-	ImGui::PopStyleColor();
-	ImGui::PopStyleVar();
-	//ImGui::PopFont();
+        if (ImGui::BeginMenu(m_LanguageManager.Get("layers").c_str()))
+        {
+            if (ImGui::MenuItem(m_LanguageManager.Get("add_layer").c_str())) { /* ... */ }
+            ImGui::EndMenu();
+        }
 
-	ImGui::End();
+        if (ImGui::BeginMenu(m_LanguageManager.Get("effects").c_str()))
+        {
+            if (ImGui::MenuItem(m_LanguageManager.Get("blur").c_str())) { /* ... */ }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::MenuItem(m_LanguageManager.Get("settings").c_str()))
+        {
+            openSettings = true;
+        }
+
+        ImGui::EndMainMenuBar();
+
+        if (openSettings) {
+			ImGui::OpenPopup("SettingsPopup");
+            openSettings = false;
+        }
+
+        if (ImGui::BeginPopup("SettingsPopup"))
+        {
+            ImGui::Text(m_LanguageManager.Get("settings").c_str());
+            ImGui::Separator();
+
+            ImVec2 size(300, 300);
+
+            static int selectedSetting = 0;
+            static std::vector<std::string> settings = {
+                m_LanguageManager.Get("general"),
+                m_LanguageManager.Get("theme"),
+                m_LanguageManager.Get("language"),
+                m_LanguageManager.Get("shortcut")
+            };
+
+
+            ImGui::BeginChild("LeftPane", ImVec2(150, size.y), true);
+            for (int i = 0; i < settings.size(); i++)
+            {
+                if (ImGui::Selectable(settings[i].c_str(), selectedSetting == i))
+                    selectedSetting = i;
+            }
+
+            ImGui::EndChild();
+
+            ImGui::SameLine();
+
+            ImGui::BeginChild("RightPane", ImVec2(300, size.y), true);
+
+            switch (selectedSetting)
+            {
+            case 0: ImGui::Text(m_LanguageManager.Get("general_settings").c_str());
+                ImGui::Separator();
+
+                // Add font size dropdown
+
+                ImGui::Text(m_LanguageManager.Get("font_size").c_str());
+                ImGui::SameLine();
+
+                // Create the preview string for the combo box
+                char previewLabel[16];
+                snprintf(previewLabel, sizeof(previewLabel), "%d", fontSize);
+
+                if (ImGui::BeginCombo("##FontSize", previewLabel))
+                {
+                    for (int i = minimumFontSize; i <= maxFontSize; i++)
+                    {
+                        char label[16];
+                        snprintf(label, sizeof(label), "%d", i);
+
+                        bool isSelected = (fontSize == i);
+                        if (ImGui::Selectable(label, isSelected))
+                        {
+                            fontSize= i;
+							m_pendingFontSizeChange = true;
+                        }
+
+                        if (isSelected)
+                            ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                }
+                break;
+            case 1: ImGui::Text(m_LanguageManager.Get("theme_settings").c_str()); break;
+            case 2: ImGui::Text(m_LanguageManager.Get("language_settings").c_str());
+                ImGui::Separator();
+
+                ImGui::Text(m_LanguageManager.Get("language").c_str());
+                ImGui::SameLine();
+
+                // Language Names
+                currentLangLabel = (m_Language == "tr") ?
+                    m_LanguageManager.Get("turkish") : m_LanguageManager.Get("english");
+
+                if (ImGui::BeginCombo("##Language", currentLangLabel.c_str()))
+                {
+                    const std::vector<std::pair<std::string, std::string>> languages = {
+                        {"en", m_LanguageManager.Get("english")},
+                        {"tr", m_LanguageManager.Get("turkish")}
+                    };
+
+                    for (const auto& lang : languages)
+                    {
+                        bool isSelected = (m_Language == lang.first);
+                        if (ImGui::Selectable(lang.second.c_str(), isSelected))
+                        {
+                            m_Language = lang.first;
+                            SetLanguage(m_Language);
+                        }
+
+                        if (isSelected)
+                            ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                }
+            break;
+            case 3: ImGui::Text(m_LanguageManager.Get("shortcut_settings").c_str()); break;
+            }
+
+            ImGui::EndChild();
+
+            if (ImGui::Button(m_LanguageManager.Get("close").c_str()))
+                ImGui::CloseCurrentPopup();
+
+            ImGui::EndPopup();
+        }
 }
 
 void UI::ShowColorPicker() {
@@ -118,16 +262,16 @@ void UI::ShowColorPicker() {
 	ImGui::SetNextWindowPos(desiredPos, ImGuiCond_FirstUseEver);	
     ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);         // Corner roundness
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);        // Border thickness
-	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(120, 120, 120, 100));  // Border color
+	//ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);         // Corner roundness
+	//ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);        // Border thickness
+	//ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(120, 120, 120, 100));  // Border color
 
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(255, 0, 0, 255));      // Input boxes background
-	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 255, 0, 255));       // Button color
-	ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0, 255, 0, 255));       // Title hover colors
-	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(255, 255, 0, 255));    // Border
-	ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0, 255, 0, 255));    // Border
-	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0, 0, 255, 255));    // Border
+	//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(255, 0, 0, 255));      // Input boxes background
+	//ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 255, 0, 255));       // Button color
+	//ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0, 255, 0, 255));       // Title hover colors
+	//ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(255, 255, 0, 255));    // Border
+	//ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0, 255, 0, 255));    // Border
+	//ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0, 0, 255, 255));    // Border
 
     ImGui::Begin(m_LanguageManager.Get("color_picker_title").c_str(), nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings);
 
@@ -162,12 +306,13 @@ void UI::ShowColorPicker() {
 
     ImGui::ColorPicker4("##picker_popup", m_Color, ImGuiColorEditFlags_AlphaBar);
     ImGui::End();
-	ImGui::PopStyleColor(7);  // Border
-	ImGui::PopStyleVar(2);   // Rounding ve BorderSize
+	//ImGui::PopStyleColor(7);  // Border
+	//ImGui::PopStyleVar(2);   // Rounding ve BorderSize
 }
 
 void UI::ShowToolPanel() {
-	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+    float menuBarHeight = ImGui::GetFrameHeight();
+	ImGui::SetNextWindowPos(ImVec2(0, menuBarHeight), ImGuiCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(m_Window.getSize().x, fontSize * 3), ImGuiCond_Always);
 
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
@@ -229,16 +374,15 @@ void UI::ShowToolBar() {
     ImGui::SetNextWindowSize(defaultSize, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSizeConstraints(minSize, maxSize);
     
-    // Apply styling similar to the color picker
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);         // Corner roundness
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);        // Border thickness
-    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(120, 120, 120, 100));  // Border color
-    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(255, 0, 0, 255));     // Input box background
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 255, 0, 255));      // Button color
-    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0, 255, 0, 255));      // Header hover colors
-    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(255, 255, 0, 255));    // Border
-    ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0, 255, 0, 255));     // Title background
-    ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0, 0, 255, 255)); // Active title background
+    //ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);         // Corner roundness
+    //ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);        // Border thickness
+    //ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(120, 120, 120, 100));  // Border color
+    //ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(255, 0, 0, 255));     // Input box background
+    //ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 255));      // Button color
+    //ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0, 255, 0, 255));      // Header hover colors
+    //ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(255, 255, 0, 255));    // Border
+    //ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0, 255, 0, 255));     // Title background
+    //ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0, 0, 255, 255)); // Active title background
     
 	
 
@@ -299,11 +443,9 @@ void UI::ShowToolBar() {
     ImGui::End();
     
     // Pop all the styling
-    ImGui::PopStyleColor(7);  // 7 colors were pushed
-    ImGui::PopStyleVar(2);    // 2 style variables were pushed
+    //ImGui::PopStyleColor(7);  // 7 colors were pushed
+    //ImGui::PopStyleVar(2);    // 2 style variables were pushed
 }
-
-
 
 sf::Color UI::GetColor() {
    return ConvertToSFMLColor();
@@ -333,6 +475,57 @@ sf::Color UI::ConvertToSFMLColor() {
 
 bool UI::CanDraw() const
 {
-	// Eðer ImGui bir item üzerinde aktifse veya bir pencereyi hover ediyorsa, çizim yapýlmamalý
+	// If ImGui is active on an item or hovering over a window, no drawing should be done
 	return !(ImGui::GetIO().WantCaptureMouse || ImGui::IsAnyItemActive() || ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow));
+}
+
+int UI::GetFontSize()
+{
+	return fontSize;
+}
+
+void UI::SetFontSize(int size) {
+    fontSize = size;
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->Clear();
+
+    ImFontConfig font_cfg;
+    font_cfg.OversampleH = 2;
+    font_cfg.OversampleV = 2;
+
+    const ImWchar turkish_chars[] = {
+        0x20, 0x7F, 0x011E, 0x011F, 0x0130, 0x0131,
+        0x015E, 0x015F, 0x00C7, 0x00E7,
+        0x00D6, 0x00F6, 0x00DC, 0x00FC, 0x00B0, 0x00B0, 0, 0
+    };
+
+    const ImWchar* glyph_ranges = m_LanguageManager.GetSystemLanguage() == "tr"
+        ? turkish_chars
+        : io.Fonts->GetGlyphRangesDefault();
+
+    io.Fonts->AddFontFromFileTTF("Source\\Assets\\Poppins-Regular.ttf", (float)fontSize, &font_cfg, glyph_ranges);
+    ImGui::SFML::UpdateFontTexture();
+}
+
+
+std::string UI::GetLanguage()
+{
+	return m_Language;
+}
+
+void UI::SetLanguage(const std::string& language)
+{
+	m_Language = language;
+    m_LanguageManager.Load("Source/Assets/lang_" + m_Language + ".json");
+}
+
+void UI::SetExport(bool value)
+{
+	exportFile = value;
+}
+
+bool UI::GetExport() const
+{
+	return exportFile;
 }

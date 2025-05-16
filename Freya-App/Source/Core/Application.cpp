@@ -37,6 +37,22 @@ Application::Application() :
 	m_Canvas = std::make_unique<Canvas>();
 	m_DrawingTool = std::make_unique<DrawingTool>(*m_Canvas);
 	m_EraserTool = std::make_unique<EraserTool>(*m_Canvas);
+	m_SettingsManager = std::make_unique<SettingsManager>();
+
+	if (!std::filesystem::exists("settings.ini")) {
+		std::cout << "First run detected. Creating default settings.ini\n";
+		m_SettingsManager->Set("UserLanguage", m_Language);
+		m_SettingsManager->Set("UserFontSize", std::to_string(m_UI->GetFontSize()));
+		m_SettingsManager->Save("settings.ini");
+	}
+
+	if (!m_SettingsManager->Load("settings.ini")) {
+		std::cerr << "Warning: Could not load settings.ini\n";
+	}
+
+	m_UI->SetLanguage(m_SettingsManager->Get("UserLanguage", m_Language));
+	m_UI->SetFontSize(std::stof(m_SettingsManager->Get("UserFontSize", std::to_string(m_UI->GetFontSize()))));
+
 	m_LastBrush = m_UI->GetBrushType();
 	m_ActiveTool = m_DrawingTool.get();
 	
@@ -48,7 +64,9 @@ Application::Application() :
 
 Application::~Application()
 {
-
+	m_SettingsManager->Set("UserLanguage", m_UI->GetLanguage());
+	m_SettingsManager->Set("UserFontSize", std::to_string(m_UI->GetFontSize()));
+	m_SettingsManager->Save("settings.ini");
 }
 
 
@@ -87,6 +105,15 @@ void Application::ProcessEvents()
 			}
 		}
 
+		if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+		{
+			//if (keyPressed->scancode == sf::Keyboard::Scancode::Y)
+			//{
+			//	m_UI->SetFontSize(m_UI->GetFontSize()+1);
+			//}
+
+		}
+
 		if (m_LastBrush != m_CurrentBrush) {
 			switch (m_CurrentBrush) {
 			case BrushType::BRUSH:
@@ -104,6 +131,10 @@ void Application::ProcessEvents()
 			m_ActiveTool->HandleEvent(*event, m_Window, m_View); // Handle input events for active tool
 		}
 
+		if (m_UI->GetExport()) {
+			m_Canvas->ExportToPNG("sahane bir resim.png");
+			m_UI->SetExport(false);
+		}
 
 		m_UI->HandleEvent(*event); // Pass event to UI
 

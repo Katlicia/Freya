@@ -1,4 +1,50 @@
 {
+	"MenuItems": "***YORUM*** Menü Butonlarını İçerir",
+	
+	"file": "Dosya",
+	"new": "Yeni",
+	"open": "Aç",
+	"save": "Kaydet",
+	"import": "İçeri Aktar",
+	"export": "Dışarı Aktar",
+	
+	"edit": "Düzenle",
+	"undo": "Geri Al",
+	
+	"view": "Görünüm",
+	"zoomin": "Yakınlaştır",
+	"zoomout": "Uzaklaştır",
+	
+	"display": "Görüntü",
+	"resize": "Yeniden Boyutlandır",
+	"horizontal_turn": "Yatay Çevir",
+	"vertical_turn": "Dikey Çevir",
+	"90_clock_rotate": "90° Saat Yönünde Döndür",
+	"90_counterclock_rotate": "90° Saat Yönünün Tersinde Döndür",
+	"180_rotate": "180° Döndür",
+	
+	"layers": "Katmanlar",
+	"add_layer": "Yeni Katman Ekle",
+	
+	"effects": "Efektler",
+	"blur": "Bulanıklaştır",
+	
+	"settings": "Ayarlar",
+	"general": "Genel",
+	"theme": "Tema",
+	"language": "Dil",
+	"shortcut": "Kısayol",
+	"font_size": "Yazı Tipi Boyutu",
+	"general_settings": "Genel Ayarlar:",
+	"theme_settings": "Tema Ayarları:",
+	"language_settings": "Diller: ",
+	"english": "English",
+	"turkish": "Türkçe",
+	"shortcut_settings": "Kısayollar: ",
+	"close": "Kapat",
+	
+	"Tools": "***YORUM***Araç Yazılarını İçerir",
+	
 	"color_picker_title": "Renk Seçici",
 	"tool_title": "Araçlar",
 

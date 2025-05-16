@@ -16,5 +16,6 @@ Makefile
 **/imgui.ini
 Freya-App/imgui.ini
 Freya-App/test.png
+Freya-App/settings.ini
 
 todo.txt

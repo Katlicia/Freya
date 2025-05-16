@@ -10,6 +10,7 @@
 #include "UI/UI.h"
 #include "LocalizationManager.h"
 #include "Tools/BrushType.h"
+#include "SettingsManager.h"
 
 class Canvas;
 class DrawingTool;
@@ -40,6 +41,7 @@ namespace FRE {
 		std::unique_ptr<EraserTool> m_EraserTool;
 		std::unique_ptr<UI> m_UI;
 		std::unique_ptr<LocalizationManager> m_LanguageManager;
+		std::unique_ptr<SettingsManager> m_SettingsManager;
 		
 		bool m_draw = true;
 

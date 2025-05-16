@@ -1,4 +1,51 @@
 {
+	"MenuItems": "***COMMENT*** Contains Menu Buttons",
+	
+	"file": "File",
+	"new": "New",
+	"open": "Open",
+	"save": "Save",
+	"import": "Import File",
+	"export": "Export File",
+	
+	
+	"edit": "Edit",
+	"undo": "Undo",
+	
+	"view": "View",
+	"zoomin": "Zoom In",
+	"zoomout": "Zoom Out",
+	
+	"display": "Display",
+	"resize": "Resize Canvas",
+	"horizontal_turn": "Turn Horizontal",
+	"vertical_turn": "Turn Vertical",
+	"90_clock_rotate": "Rotate 90° Clockwise",
+	"90_counterclock_rotate": "Rotate 90° Counterclockwise",
+	"180_rotate": "Rotate 180°",
+	
+	"layers": "Layers",
+	"add_layer": "Add New Layer",
+	
+	"effects": "Effects",
+	"blur": "Blur",
+
+	"settings": "Settings",
+	"general": "General",
+	"theme": "Theme",
+	"language": "Language",
+	"shortcut": "Shortcut",
+	"font_size": "Font Size",
+	"general_settings": "General Settings:",
+	"theme_settings": "Theme Settings:",
+	"language_settings": "Languages:",
+	"english": "English",
+	"turkish": "Türkçe",
+	"shortcut_settings": "Shortcuts:",
+	"close": "Close",
+	
+	"Tools": "***COMMENT***Contains Tool Variables",
+	
 	"color_picker_title": "Color Picker",
 	"tool_title": "Tools",
 

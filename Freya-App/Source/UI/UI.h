@@ -25,6 +25,15 @@ namespace FRE {
 
 		bool CanDraw() const;
 
+		int GetFontSize();
+		void SetFontSize(int size);
+
+		std::string GetLanguage();
+		void SetLanguage(const std::string& language);
+
+		void SetExport(bool value);
+		bool GetExport() const;
+
 	private:
 		void ShowMainMenuBar();
 		void ShowToolPanel();
@@ -35,8 +44,16 @@ namespace FRE {
 		sf::RenderWindow& m_Window;
 		LocalizationManager m_LanguageManager;
 
-		float fontSize;
-		float maxFontSize = 30.f;
+		int fontSize = 18;
+		int maxFontSize = 30;
+		int minimumFontSize = 18;
+
+		bool m_pendingFontSizeChange = false;
+
+		std::string m_Language;
+		std::string currentLangLabel;
+
+		bool exportFile = false;
 
 		BrushType m_BrushType = BrushType::BRUSH;
 
@@ -46,7 +63,7 @@ namespace FRE {
 
 		// UI Window management
 		const float snapThreshold = 20.0f;  // Snap when within 20 pixels of the edge
-
+		bool openSettings = false;
 	};
 }
 
