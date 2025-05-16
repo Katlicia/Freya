@@ -155,19 +155,21 @@ void UI::ShowMainMenuBar() {
             ImVec2 size(300, 300);
 
             static int selectedSetting = 0;
-            static std::vector<std::string> settings = {
-                m_LanguageManager.Get("general"),
-                m_LanguageManager.Get("theme"),
-                m_LanguageManager.Get("language"),
-                m_LanguageManager.Get("shortcut")
-            };
 
+            static std::vector<std::string> settings = {
+                "general",
+                "theme",
+                "language",
+                "shortcut"
+            };
 
             ImGui::BeginChild("LeftPane", ImVec2(150, size.y), true);
             for (int i = 0; i < settings.size(); i++)
             {
-                if (ImGui::Selectable(settings[i].c_str(), selectedSetting == i))
-                    selectedSetting = i;
+				if (ImGui::Selectable(m_LanguageManager.Get(settings[i]).c_str(), selectedSetting == i))
+				{
+					selectedSetting = i;
+				}                 
             }
 
             ImGui::EndChild();
