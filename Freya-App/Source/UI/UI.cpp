@@ -176,7 +176,7 @@ void UI::ShowMainMenuBar() {
 
             ImGui::SameLine();
 
-            ImGui::BeginChild("RightPane", ImVec2(300, size.y), true);
+            ImGui::BeginChild("RightPanel", ImVec2(320, size.y), true);
 
             switch (selectedSetting)
             {
