@@ -1,12 +1,13 @@
 #include "DrawingTool.h"
 #include <iostream>
+#include <cmath>
 
 using namespace FRE;
 
 DrawingTool::DrawingTool(Canvas& canvas)
-	: m_Canvas(canvas)
+    : Tool(canvas)
 {
-	
+    // The constructor of the Tool base class already stores the Canvas reference
 }
 
 void DrawingTool::HandleEvent(const sf::Event& event, const sf::RenderWindow& window, const sf::View& view)
@@ -107,23 +108,4 @@ void DrawingTool::Update(const sf::RenderWindow& window, const sf::View& view)
     }
 
     m_LastPosition = newPosition;
-}
-
-void DrawingTool::SetColor(sf::Color color)
-{
-	m_Color = color;
-}
-
-void DrawingTool::SetThickness(float thickness)
-{
-    m_Thickness = std::clamp(thickness, 1.f, m_MaxThickness);
-}
-
-float DrawingTool::GetThickness()
-{
-	return m_Thickness;
-}
-
-void DrawingTool::SetSpacing(int spacing) {
-    m_Spacing = std::max(0, spacing);
 }

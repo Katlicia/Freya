@@ -9,8 +9,8 @@ Canvas::Canvas()
 	{
 		throw std::runtime_error("Failed to create RenderTexture");
 	}
-	//m_RenderTexture.clear(sf::Color::White);
-	m_RenderTexture.clear(sf::Color(255, 255, 255, 0));
+	m_RenderTexture.clear(sf::Color::White);
+	//m_RenderTexture.clear(sf::Color(255, 255, 255, 0));
 	m_Sprite.emplace(m_RenderTexture.getTexture());
 
 	CreateTransparencyPattern();
@@ -22,8 +22,8 @@ Canvas::Canvas(unsigned int width, unsigned height) : m_Size({ width, height })
 	{
 		throw std::runtime_error("Failed to create RenderTexture");
 	}
-	//m_RenderTexture.clear(sf::Color::White);
-	m_RenderTexture.clear(sf::Color(255, 255, 255, 0));
+	m_RenderTexture.clear(sf::Color::White);
+	//m_RenderTexture.clear(sf::Color(255, 255, 255, 0));
 	m_Sprite.emplace(m_RenderTexture.getTexture());
 
 	CreateTransparencyPattern();

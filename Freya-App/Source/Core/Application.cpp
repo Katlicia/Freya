@@ -35,6 +35,7 @@ Application::Application() :
 	m_UI = std::make_unique<UI>(m_Window, *m_LanguageManager);
 	m_Canvas = std::make_unique<Canvas>();
 	m_DrawingTool = std::make_unique<DrawingTool>(*m_Canvas);
+	m_EraserTool = std::make_unique<EraserTool>(*m_Canvas);
 	m_DrawingTool->SetColor(m_UI->GetColor());
 	
 	m_InitialZoom = 1.f;
@@ -69,7 +70,8 @@ void Application::ProcessEvents()
 			m_Window.close();
 			/*m_IsRunning = false;*/ // (Crashes) FIX BUG
 
-		m_DrawingTool->HandleEvent(*event, m_Window, m_View); // Handle input events for drawing tool
+		if (m_draw) m_DrawingTool->HandleEvent(*event, m_Window, m_View); // Handle input events for drawing tool
+		else m_EraserTool->HandleEvent(*event, m_Window, m_View); // Handle input events for eraser tool
 
 		if (const auto* resized = event->getIf<sf::Event::Resized>())
 		{
@@ -86,7 +88,15 @@ void Application::ProcessEvents()
 		{
 			if (keyPressed->scancode == sf::Keyboard::Scancode::Z)
 			{
-				m_DrawingTool->SetThickness(m_DrawingTool->GetThickness() + 1);
+				m_draw = not m_draw;
+			}
+		}
+
+		if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+		{
+			if (keyPressed->scancode == sf::Keyboard::Scancode::B)
+			{
+				m_EraserTool->SetThickness(50.f);
 			}
 		}
 
@@ -139,6 +149,7 @@ void Application::Update(sf::Time deltaTime)
 {
 	m_UI->Update(deltaTime);
 	m_DrawingTool->Update(m_Window, m_View);
+	m_EraserTool->Update(m_Window, m_View);
 	m_Canvas->Update(m_Window, m_View);
 	m_DrawingTool->SetColor(m_UI->GetColor()); // Update drawing tool color
 	m_DrawingTool->SetThickness(m_UI->GetBrushSize()); // Update drawing tool thickness

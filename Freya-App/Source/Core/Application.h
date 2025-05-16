@@ -6,6 +6,7 @@
 #include <iostream>
 #include "../Tools/DrawingTool.h"
 #include "../Tools/Canvas.h"
+#include "../Tools/EraserTool.h"
 #include "../UI/UI.h"
 #include "LocalizationManager.h"
 
@@ -35,9 +36,12 @@ namespace FRE {
 		
 		std::unique_ptr<Canvas> m_Canvas;
 		std::unique_ptr<DrawingTool> m_DrawingTool;
+		std::unique_ptr<EraserTool> m_EraserTool;
 		std::unique_ptr<UI> m_UI;
 		std::unique_ptr<LocalizationManager> m_LanguageManager;
+		
 
+		bool m_draw = true;
 
 		std::string m_Language;
 
