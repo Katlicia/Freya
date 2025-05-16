@@ -23,43 +23,29 @@ namespace FRE {
 
 		BrushType GetBrushType();
 
+		bool CanDraw() const;
+
 	private:
 		void ShowMainMenuBar();
 		void ShowToolPanel();
 		void ShowStatusBar();
 		void ShowColorPicker();
+		void ShowToolBar();
+
 		sf::RenderWindow& m_Window;
 		LocalizationManager m_LanguageManager;
 
 		float fontSize;
 		float maxFontSize = 30.f;
 
-		// UI State variables
-		const float SNAP_DISTANCE = 100.f;
-
-		enum class AnchorType {
-			Top,
-			Bottom,
-			Left,
-			Right,
-			None
-		};
-
 		BrushType m_BrushType = BrushType::BRUSH;
 
 		float m_Color[4] = { (float)0 / 255, (float)0 / 255, (float)0 / 255 , (float) 255 / 255 };
-		float m_OriginalColor[4] = { (float)0 / 255, (float)0 / 255, (float)0 / 255 , (float) 255 / 255 };
-
-		AnchorType m_toolBarCurrentAnchor = AnchorType::Right;
-		ImVec2 m_toolPanelPos = ImVec2(0, 0);
-		ImVec2 m_toolPanelSize = ImVec2(100.f, 500.f);
-		bool m_isPanelSizeInitialized = false;
-		bool m_isDragging = false;
-
-		// Tool Components
-
 		int m_BrushSize = 1;
 		int m_Spacing = 0;
+
+		// UI Window management
+		const float snapThreshold = 20.0f;  // Snap when within 20 pixels of the edge
 
 	};
 }

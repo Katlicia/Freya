@@ -6,5 +6,7 @@
 	"opacity": "Opaklık",
 	"hardness": "Sertlik",
 	"spacing": "Aralık",
-	"color": "Renk"
+	"color": "Renk",
+	"brush": "Fırça",
+	"eraser": "Silgi"
 }

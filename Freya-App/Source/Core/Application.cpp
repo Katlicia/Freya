@@ -99,7 +99,10 @@ void Application::ProcessEvents()
 			m_LastBrush = m_CurrentBrush;
 		}
 
-		m_ActiveTool->HandleEvent(*event, m_Window, m_View); // Handle input events for active tool
+		if (m_UI->CanDraw()) // If user is interacting with ImGUI window cancel drawing
+		{
+			m_ActiveTool->HandleEvent(*event, m_Window, m_View); // Handle input events for active tool
+		}
 
 
 		m_UI->HandleEvent(*event); // Pass event to UI

@@ -27,7 +27,7 @@ UI::UI(sf::RenderWindow& window, LocalizationManager languageManager) : m_Window
 	font_cfg.OversampleH = 2;
 	font_cfg.OversampleV = 2;
 
-	fontSize = 18.f;
+	fontSize = 20.f;
 
 	ImFont* font1 = io.Fonts->AddFontFromFileTTF("Source\\Assets\\Poppins-Regular.ttf", fontSize, &font_cfg, turkish_chars);
 
@@ -48,7 +48,7 @@ void UI::HandleEvent(const sf::Event& event) {
 
 	if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
 	{
-		if (keyPressed->scancode == sf::Keyboard::Scancode::P)
+		if (keyPressed->scancode == sf::Keyboard::Scancode::B)
 		{
 			m_BrushType = BrushType::BRUSH;
 		}
@@ -63,8 +63,9 @@ void UI::HandleEvent(const sf::Event& event) {
 void UI::Render(sf::RenderWindow& window) {
 	//ShowMainMenuBar();
 	ShowToolPanel();
-	ShowStatusBar();
+	//ShowStatusBar();
 	ShowColorPicker();
+	ShowToolBar();
 	ImGui::SFML::Render(window);
 }
 
@@ -112,23 +113,21 @@ void UI::ShowStatusBar() {
 
 void UI::ShowColorPicker() {
     ImGuiIO& io = ImGui::GetIO();
-	const float snapThreshold = 20.0f; // Snap when within 20 pixels of the edge
     const ImVec2 windowSize = ImVec2(340, 305);
-    const ImVec2 padding = ImVec2(10, 10);
 	const ImVec2 desiredPos = ImVec2(0.0f, io.DisplaySize.y - windowSize.y);
 	ImGui::SetNextWindowPos(desiredPos, ImGuiCond_FirstUseEver);	
     ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);         // Köþe yuvarlaklýðý
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);        // Kenarlýk kalýnlýðý
-	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(120, 120, 120, 100));  // Kenarlýk rengi
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);         // Corner roundness
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);        // Border thickness
+	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(120, 120, 120, 100));  // Border color
 
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(255, 0, 0, 255));      // Giriþ kutularý arka planý
-	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 255, 0, 255));       // Düðme rengi
-	ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0, 255, 0, 255));       // Baþlýk hover renkleri
-	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(255, 255, 0, 255));    // Kenarlýk
-	ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0, 255, 0, 255));    // Kenarlýk
-	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0, 0, 255, 255));    // Kenarlýk
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(255, 0, 0, 255));      // Input boxes background
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 255, 0, 255));       // Button color
+	ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0, 255, 0, 255));       // Title hover colors
+	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(255, 255, 0, 255));    // Border
+	ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0, 255, 0, 255));    // Border
+	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0, 0, 255, 255));    // Border
 
     ImGui::Begin(m_LanguageManager.Get("color_picker_title").c_str(), nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings);
 
@@ -179,7 +178,6 @@ void UI::ShowToolPanel() {
 
 	ImGui::PushItemWidth(150);
 
-
 	ImVec2 currentCurPos = ImGui::GetCursorPos();
 
 	// Brush Size
@@ -190,21 +188,20 @@ void UI::ShowToolPanel() {
 	ImVec2 pos2(currentCurPos.x + 170, currentCurPos.y);
 	ImGui::SetCursorPos(pos2);
 
-	// Opacity (0.0 - 1.0)
-	ImGui::Text(m_LanguageManager.Get("opacity").c_str());
-	ImGui::SetCursorPos(ImVec2(pos2.x, pos2.y + fontSize));
-	ImGui::SliderFloat("##Opacity", &m_Color[3], 0.0f, 1.f);
-
-	ImGui::SetCursorPos(ImVec2(currentCurPos.x + 340, pos2.y));
-
-	// Spacing (0.0 - 1.0)
+	// Spacing (0.0 - 500.0)
 	ImGui::Text(m_LanguageManager.Get("spacing").c_str());
-	ImGui::SetCursorPos(ImVec2(currentCurPos.x + 340, pos2.y + fontSize));
+	ImGui::SetCursorPos(ImVec2(pos2.x, pos2.y + fontSize));
 	ImGui::SliderInt("##Spacing", &m_Spacing, 0, 500);
 
-	// Color
 	if (m_BrushType != BrushType::ERASER)
 	{
+		ImGui::SetCursorPos(ImVec2(currentCurPos.x + 340, pos2.y));
+		// Opacity (0.0 - 1.0)
+		ImGui::Text(m_LanguageManager.Get("opacity").c_str());
+		ImGui::SetCursorPos(ImVec2(currentCurPos.x + 340, pos2.y + fontSize));
+		ImGui::SliderFloat("##Opacity", &m_Color[3], 0.0f, 1.f);
+
+		// Color
 		ImGui::SetCursorPos(ImVec2(currentCurPos.x + 510, pos2.y));
 
 		ImGui::Text(m_LanguageManager.Get("color").c_str());
@@ -217,8 +214,98 @@ void UI::ShowToolPanel() {
 	ImGui::End();
 }
 
-sf::Color UI::GetColor() 
-{
+void UI::ShowToolBar() {
+    ImGuiIO& io = ImGui::GetIO();
+    const ImVec2 minSize = ImVec2(fontSize * 4.5f, 300); // Minimum size for the toolbar
+    const ImVec2 maxSize = ImVec2(200, 600); // Maximum size for the toolbar
+    const ImVec2 defaultSize = ImVec2(fontSize * 4.5f, 300); // Default window size
+
+    const float snapThreshold = 20.0f; // Snap threshold in pixels
+    
+    // Position on the right side of the screen
+    const ImVec2 desiredPos = ImVec2(io.DisplaySize.x - defaultSize.x, 
+                                    (io.DisplaySize.y - defaultSize.y) / 2);
+    ImGui::SetNextWindowPos(desiredPos, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(defaultSize, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSizeConstraints(minSize, maxSize);
+    
+    // Apply styling similar to the color picker
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);         // Corner roundness
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);        // Border thickness
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(120, 120, 120, 100));  // Border color
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(255, 0, 0, 255));     // Input box background
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 255, 0, 255));      // Button color
+    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0, 255, 0, 255));      // Header hover colors
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(255, 255, 0, 255));    // Border
+    ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0, 255, 0, 255));     // Title background
+    ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0, 0, 255, 255)); // Active title background
+    
+	
+
+    // Create window with resize and collapse flags
+    ImGui::Begin(m_LanguageManager.Get("tool_title").c_str(), nullptr,
+                ImGuiWindowFlags_NoSavedSettings);
+    
+	ImVec2 available = ImGui::GetContentRegionAvail();
+	float buttonWidth = available.x * 0.9f;
+	float buttonHeight = available.y / 10.0f;
+
+
+    // Snap logic:
+    ImVec2 pos = ImGui::GetWindowPos();
+    ImVec2 size = ImGui::GetWindowSize();
+    bool changed = false;
+    
+    // Snap to screen edges
+    if (pos.x <= snapThreshold) {
+        pos.x = 0.0f;
+        changed = true;
+    }
+    else if (pos.x + size.x >= io.DisplaySize.x - snapThreshold) {
+        pos.x = io.DisplaySize.x - size.x;
+        changed = true;
+    }
+    
+    if (pos.y <= snapThreshold) {
+        pos.y = 0.0f;
+        changed = true;
+    }
+    else if (pos.y + size.y >= io.DisplaySize.y - snapThreshold) {
+        pos.y = io.DisplaySize.y - size.y;
+        changed = true;
+    }
+    
+    if (changed) {
+        ImGui::SetWindowPos(pos);
+    }
+    
+    // Example buttons
+	if (ImGui::Button(m_LanguageManager.Get("brush").c_str(), ImVec2(buttonWidth, buttonHeight))) {
+		m_BrushType = BrushType::BRUSH;
+    }
+
+	//if (ImGui::IsItemHovered()) {
+	//	ImGui::SetTooltip("Tooltip example.");
+	//}
+    
+    if (ImGui::Button(m_LanguageManager.Get("eraser").c_str(), ImVec2(buttonWidth, buttonHeight))) {
+		m_BrushType = BrushType::ERASER;
+    }
+    
+    if (ImGui::Button("Tool 3", ImVec2(fontSize * 3, fontSize + fontSize / 3))) {
+        // Code for Tool 3
+    }
+    
+    ImGui::End();
+    
+    // Pop all the styling
+    ImGui::PopStyleColor(7);  // 7 colors were pushed
+    ImGui::PopStyleVar(2);    // 2 style variables were pushed
+}
+
+
+
+sf::Color UI::GetColor() {
    return ConvertToSFMLColor();
 }
 
@@ -230,6 +317,11 @@ float UI::GetSpacing() {
 	return m_Spacing;
 }
 
+
+BrushType UI::GetBrushType() {
+	return m_BrushType;
+}
+
 sf::Color UI::ConvertToSFMLColor() {
 	return sf::Color(
 		static_cast<std::uint8_t>(m_Color[0] * 255),
@@ -239,207 +331,8 @@ sf::Color UI::ConvertToSFMLColor() {
 	);
 }
 
-BrushType UI::GetBrushType() {
-	return m_BrushType;
+bool UI::CanDraw() const
+{
+	// Eðer ImGui bir item üzerinde aktifse veya bir pencereyi hover ediyorsa, çizim yapýlmamalý
+	return !(ImGui::GetIO().WantCaptureMouse || ImGui::IsAnyItemActive() || ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow));
 }
-
-//void UI::ShowToolPanel() {
-//    ImGuiIO& io = ImGui::GetIO();
-//    ImVec2 windowSize = io.DisplaySize;
-//    
-//    // Anchor tipi deðiþtiðinde varsayýlan boyutlar
-//    const ImVec2 HORIZONTAL_SIZE = ImVec2(500.f, 100.f); // Üst/alt panel boyutu
-//    const ImVec2 VERTICAL_SIZE = ImVec2(100.f, 500.f);   // Sað/sol panel boyutu
-//    
-//    // Ýlk baþlatma
-//    if (!m_isPanelSizeInitialized) {
-//        // Set position to right anchor on start 
-//        switch (m_toolBarCurrentAnchor) {
-//        case AnchorType::Left:
-//            m_toolPanelSize = VERTICAL_SIZE;
-//            m_toolPanelPos = ImVec2(0, windowSize.y / 2 - m_toolPanelSize.y / 2);
-//            break;
-//        case AnchorType::Right:
-//            m_toolPanelSize = VERTICAL_SIZE;
-//            m_toolPanelPos = ImVec2(windowSize.x - m_toolPanelSize.x, windowSize.y / 2 - m_toolPanelSize.y / 2);
-//            break;
-//        case AnchorType::Top:
-//            m_toolPanelSize = HORIZONTAL_SIZE;
-//            m_toolPanelPos = ImVec2(windowSize.x / 2 - m_toolPanelSize.x / 2, 0);
-//            break;
-//        case AnchorType::Bottom:
-//            m_toolPanelSize = HORIZONTAL_SIZE;
-//            m_toolPanelPos = ImVec2(windowSize.x / 2 - m_toolPanelSize.x / 2, windowSize.y - m_toolPanelSize.y);
-//            break;
-//        default:
-//            m_toolPanelPos = ImVec2(windowSize.x / 2 - m_toolPanelSize.x / 2, windowSize.y / 2 - m_toolPanelSize.y / 2);
-//            break;
-//        }
-//        m_isPanelSizeInitialized = true;
-//    }
-//    
-//    static bool positionSetThisFrame = false;
-//    static bool sizeSetThisFrame = false;
-//    static ImVec2 lastWindowSize = windowSize;
-//    static AnchorType prevAnchor = m_toolBarCurrentAnchor;
-//    
-//    // Anchor tipi deðiþtiðinde boyut ve pozisyon güncelleme
-//    if (prevAnchor != m_toolBarCurrentAnchor) {
-//        // Anchor pozisyon deðiþikliði durumunda boyut ve pozisyonu birlikte güncelle
-//        switch (m_toolBarCurrentAnchor) {
-//            case AnchorType::Left:
-//                m_toolPanelSize = VERTICAL_SIZE;
-//                m_toolPanelPos = ImVec2(0, windowSize.y / 2 - m_toolPanelSize.y / 2);
-//                break;
-//            case AnchorType::Right:
-//                m_toolPanelSize = VERTICAL_SIZE;
-//                m_toolPanelPos = ImVec2(windowSize.x - m_toolPanelSize.x, windowSize.y / 2 - m_toolPanelSize.y / 2);
-//                break;
-//            case AnchorType::Top:
-//                m_toolPanelSize = HORIZONTAL_SIZE;
-//                m_toolPanelPos = ImVec2(windowSize.x / 2 - m_toolPanelSize.x / 2, 0);
-//                break;
-//            case AnchorType::Bottom:
-//                m_toolPanelSize = HORIZONTAL_SIZE;
-//                m_toolPanelPos = ImVec2(windowSize.x / 2 - m_toolPanelSize.x / 2, windowSize.y - m_toolPanelSize.y);
-//                break;
-//            default:
-//                // None anchor durumunda pozisyonu koruyoruz, boyutu deðiþtirmiyoruz
-//                break;
-//        }
-//        
-//        sizeSetThisFrame = true;
-//        positionSetThisFrame = true;
-//        prevAnchor = m_toolBarCurrentAnchor;
-//    }
-//    
-//    // Ekran boyutu deðiþtiðinde anchor pozisyonunu güncelle
-//    if (lastWindowSize.x != windowSize.x || lastWindowSize.y != windowSize.y) {
-//        positionSetThisFrame = true;
-//        
-//        // Ekran boyutu deðiþtiðinde anchor pozisyonunu güncelle
-//        switch (m_toolBarCurrentAnchor) {
-//            case AnchorType::Left:
-//                m_toolPanelPos.x = 0;
-//                m_toolPanelPos.y = windowSize.y / 2 - m_toolPanelSize.y / 2;
-//                break;
-//            case AnchorType::Right:
-//                m_toolPanelPos.x = windowSize.x - m_toolPanelSize.x;
-//                m_toolPanelPos.y = windowSize.y / 2 - m_toolPanelSize.y / 2;
-//                break;
-//            case AnchorType::Top:
-//                m_toolPanelPos.x = windowSize.x / 2 - m_toolPanelSize.x / 2;
-//                m_toolPanelPos.y = 0;
-//                break;
-//            case AnchorType::Bottom:
-//                m_toolPanelPos.x = windowSize.x / 2 - m_toolPanelSize.x / 2;
-//                m_toolPanelPos.y = windowSize.y - m_toolPanelSize.y;
-//                break;
-//        }
-//        lastWindowSize = windowSize;
-//    }
-//    
-//    // Gerektiðinde pozisyon ve boyutu güncelle
-//    if (positionSetThisFrame) {
-//        ImGui::SetNextWindowPos(m_toolPanelPos);
-//        positionSetThisFrame = false;
-//    }
-//    
-//    if (sizeSetThisFrame) {
-//        ImGui::SetNextWindowSize(m_toolPanelSize);
-//        sizeSetThisFrame = false;
-//    } else {
-//        ImGui::SetNextWindowSize(m_toolPanelSize, ImGuiCond_Once);
-//    }
-//    
-//    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(5, 5));
-//    
-//    ImGuiWindowFlags flags = 0;
-//    flags |= ImGuiWindowFlags_NoCollapse, ImGuiWindowFlags_NoSavedSettings;
-//
-//    
-//    // Panel görünümünü oluþtur
-//    ImGui::Begin("Tools", nullptr, flags);
-//    
-//    // Araç butonlarý
-//    if (ImGui::Button("Tool 1", ImVec2(ImGui::GetContentRegionAvail().x, 0))) { /* ... */ }
-//    if (ImGui::Button("Tool 2", ImVec2(ImGui::GetContentRegionAvail().x, 0))) { /* ... */ }
-//    
-//    // Sürükleme takibi
-//    if (ImGui::IsWindowHovered() && ImGui::IsMouseDragging(0)) {
-//        m_isDragging = true;
-//        // Sürükleme baþladýðýnda anchor'u kaldýr
-//        if (m_toolBarCurrentAnchor != AnchorType::None) {
-//            m_toolBarCurrentAnchor = AnchorType::None;
-//            prevAnchor = AnchorType::None; // Güncelleme kýsmýný da sýfýrla
-//        }
-//    }
-//    
-//    // Pozisyon ve boyut deðiþikliklerini takip et
-//    ImVec2 newPos = ImGui::GetWindowPos();
-//    ImVec2 newSize = ImGui::GetWindowSize();
-//    
-//    // Deðiþiklikleri kaydet
-//    if (newPos.x != m_toolPanelPos.x || newPos.y != m_toolPanelPos.y) {
-//        m_toolPanelPos = newPos;
-//    }
-//    
-//    if (newSize.x != m_toolPanelSize.x || newSize.y != m_toolPanelSize.y) {
-//        m_toolPanelSize = newSize;
-//    }
-//    
-//    // Sürükleme bittiðinde anchor kontrolü
-//    if (m_isDragging && !ImGui::IsMouseDragging(0)) {
-//        m_isDragging = false;
-//        
-//        // Anchor kontrolü
-//        float leftDist = m_toolPanelPos.x;
-//        float rightDist = windowSize.x - (m_toolPanelPos.x + m_toolPanelSize.x);
-//        float topDist = m_toolPanelPos.y;
-//        float bottomDist = windowSize.y - (m_toolPanelPos.y + m_toolPanelSize.y);
-//        
-//        // Önceki anchoru temizle
-//        m_toolBarCurrentAnchor = AnchorType::None;
-//        
-//        // En yakýn kenara yapýþ
-//        float minDist = SNAP_DISTANCE;
-//        if (leftDist <= minDist && leftDist <= rightDist && leftDist <= topDist && leftDist <= bottomDist) {
-//            m_toolBarCurrentAnchor = AnchorType::Left;
-//            // Boyut ve pozisyon deðiþimi için prevAnchor'u güncelleme
-//            // Böylece bir sonraki frame'de boyut ve pozisyon otomatik güncellenecek
-//            if (prevAnchor != AnchorType::Left) {
-//                prevAnchor = AnchorType::None; // Tetikleyici güncelleme
-//            }
-//        }
-//        else if (rightDist <= minDist && rightDist <= leftDist && rightDist <= topDist && rightDist <= bottomDist) {
-//            m_toolBarCurrentAnchor = AnchorType::Right;
-//            if (prevAnchor != AnchorType::Right) {
-//                prevAnchor = AnchorType::None; // Tetikleyici güncelleme
-//            }
-//        }
-//        else if (topDist <= minDist && topDist <= leftDist && topDist <= rightDist && topDist <= bottomDist) {
-//            m_toolBarCurrentAnchor = AnchorType::Top;
-//            if (prevAnchor != AnchorType::Top) {
-//                prevAnchor = AnchorType::None; // Tetikleyici güncelleme
-//            }
-//        }
-//        else if (bottomDist <= minDist && bottomDist <= leftDist && bottomDist <= rightDist && bottomDist <= topDist) {
-//            m_toolBarCurrentAnchor = AnchorType::Bottom;
-//            if (prevAnchor != AnchorType::Bottom) {
-//                prevAnchor = AnchorType::None; // Tetikleyici güncelleme
-//            }
-//        }
-//    }
-//    
-//    // Debug bilgisi
-//    
-//    ImGui::Separator();
-//    ImGui::Text("Anchor: %d", static_cast<int>(m_toolBarCurrentAnchor));
-//    ImGui::Text("Pos: %.1f, %.1f", m_toolPanelPos.x, m_toolPanelPos.y);
-//    ImGui::Text("Size: %.1f, %.1f", m_toolPanelSize.x, m_toolPanelSize.y);
-//    ImGui::Text("Dragging: %s", m_isDragging ? "Yes" : "No");
-//    
-//    
-//    ImGui::End();
-//    ImGui::PopStyleVar();
-//}

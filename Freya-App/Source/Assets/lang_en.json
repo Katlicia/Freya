@@ -6,5 +6,7 @@
 	"opacity": "Opacity",
 	"hardness": "Hardness",
 	"spacing": "Spacing",
-	"color": "Color"
+	"color": "Color",
+	"brush": "Brush",
+	"eraser": "Eraser"
 }
