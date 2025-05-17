@@ -7,6 +7,14 @@
 	"save": "Save",
 	"import": "Import File",
 	"export": "Export File",
+	"file_name": "File Name:",
+	"file_path": "File Path:",
+	"format": "Format:",
+	"export_success": "Export Successful",
+	"export_failure": "Export Failed",
+	"cancel": "Cancel",
+	"browse": "Browse...",
+	"export_file": "Export File",
 	
 	
 	"edit": "Edit",

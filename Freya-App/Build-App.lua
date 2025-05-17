@@ -25,12 +25,17 @@ project "App"
 	  -- Include ImGUI
 	  "../Vendor/ImGUI",
       -- Include Nlohmann JSON
-      "../Vendor/nlohmann/include"
+      "../Vendor/nlohmann/include",
+      -- Include Native File Dialog
+      "../Vendor/nativefiledialog/src/include"
     }
 
 	libdirs 
 	{
-		"$(ProjectDir)../Vendor/SFML/lib"
+		"$(ProjectDir)../Vendor/SFML/lib",
+		"$(ProjectDir)../Vendor/nativefiledialog/Release/x64",
+		"$(ProjectDir)../Vendor/nativefiledialog/Debug/x64" 
+
 	}
 
    links
@@ -62,7 +67,8 @@ project "App"
         "sfml-graphics-s-d.lib",
         "sfml-network-s-d.lib",
         "sfml-system-s-d.lib",
-        "sfml-window-s-d.lib"
+        "sfml-window-s-d.lib",
+        "nfd_d.lib"
        }
 
    filter "configurations:Release"
@@ -75,7 +81,8 @@ project "App"
         "sfml-graphics-s.lib",
         "sfml-network-s.lib",
         "sfml-system-s.lib",
-        "sfml-window-s.lib"
+        "sfml-window-s.lib",
+        "nfd.lib"
        }
 
    filter "configurations:Dist"
@@ -88,5 +95,6 @@ project "App"
         "sfml-graphics-s.lib",
         "sfml-network-s.lib",
         "sfml-system-s.lib",
-        "sfml-window-s.lib"
+        "sfml-window-s.lib",
+        "nfd.lib"
        }

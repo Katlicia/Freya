@@ -4,6 +4,7 @@ using namespace FRE;
 
 UI::UI(sf::RenderWindow& window, LocalizationManager languageManager) : m_Window(window), m_LanguageManager(languageManager)
 {
+
 	// Initialize ImGui-SFML
 	if (!ImGui::SFML::Init(m_Window, false))
 	{
@@ -46,6 +47,10 @@ UI::~UI()
 	ImGui::SFML::Shutdown();
 }
 
+void UI::SetCanvas(Canvas* canvas) {
+	m_Canvas = canvas;
+}
+
 void UI::Update(sf::Time deltaTime) {
     if (m_pendingFontSizeChange)
     {
@@ -78,6 +83,7 @@ void UI::Render(sf::RenderWindow& window) {
 	ShowToolPanel();
 	ShowColorPicker();
 	ShowToolBar();
+    RenderNotifications();
 	ImGui::SFML::Render(window);
 }
 
@@ -92,7 +98,7 @@ void UI::ShowMainMenuBar() {
             if (ImGui::MenuItem(m_LanguageManager.Get("import").c_str())) { /* ... */ }
             if (ImGui::MenuItem(m_LanguageManager.Get("export").c_str())) 
             {
-                SetExport(true);
+                openExportDialog = true;
             }
             ImGui::EndMenu();
         }
@@ -142,6 +148,107 @@ void UI::ShowMainMenuBar() {
 
         ImGui::EndMainMenuBar();
 
+        // Export Popup
+        if (openExportDialog) {
+            ImGui::OpenPopup("ExportPopup");
+            openExportDialog = false;
+            // Default filename with current date/time
+            time_t now = time(0);
+            struct tm* timeinfo = localtime(&now);
+            char buffer[80];
+            strftime(buffer, sizeof(buffer), "image_%Y%m%d_%H%M%S", timeinfo);
+            m_ExportFileName = buffer;
+        }
+
+        if (ImGui::BeginPopup("ExportPopup"))
+        {
+            ImGui::Text(m_LanguageManager.Get("export").c_str());
+            ImGui::Separator();
+
+            ImVec2 size(400, 200);
+
+            // File Name
+            ImGui::Text(m_LanguageManager.Get("file_name").c_str());
+            ImGui::SameLine();
+
+            char fileNameBuffer[256];
+            strncpy(fileNameBuffer, m_ExportFileName.c_str(), sizeof(fileNameBuffer));
+            fileNameBuffer[sizeof(fileNameBuffer) - 1] = 0;
+
+            if (ImGui::InputText("##FileName", fileNameBuffer, sizeof(fileNameBuffer)))
+            {
+                m_ExportFileName = fileNameBuffer;
+            }
+
+            ImGui::Text(m_LanguageManager.Get("file_path").c_str());
+            ImGui::SameLine();
+
+            char filePathBuffer[256];
+            strncpy(filePathBuffer, m_ExportFilePath.c_str(), sizeof(filePathBuffer));
+            filePathBuffer[sizeof(filePathBuffer) - 1] = 0;
+
+            if (ImGui::InputText("##FilePath", filePathBuffer, sizeof(filePathBuffer)))
+            {
+                m_ExportFilePath = filePathBuffer;
+            }
+
+            // Format selection
+            //ImGui::Text(m_LanguageManager.Get("format").c_str());
+            ImGui::SameLine();
+
+            // Browse button to open folder picker
+            if (ImGui::Button(m_LanguageManager.Get("browse").c_str()))
+            {
+                std::string selectedPath = ShowFileDialog();
+                if (!selectedPath.empty())
+                {
+                    m_ExportFilePath = selectedPath;
+                }
+            }
+
+            ImGui::Text(m_LanguageManager.Get("format").c_str());
+            ImGui::SameLine();
+
+            const char* formats[] = { "PNG", "JPG", "BMP" };
+            const char* currentFormat = formats[m_SelectedFormat];
+
+            if (ImGui::BeginCombo("##Format", currentFormat))
+            {
+                for (int i = 0; i < IM_ARRAYSIZE(formats); i++)
+                {
+                    bool isSelected = (m_SelectedFormat == i);
+                    if (ImGui::Selectable(formats[i], isSelected))
+                    {
+                        m_SelectedFormat = i;
+                    }
+
+                    if (isSelected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+
+            ImGui::Separator();
+
+            // Buttons
+            if (ImGui::Button(m_LanguageManager.Get("export").c_str(), ImVec2(120, 0)))
+            {
+                ExportImage();
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button(m_LanguageManager.Get("cancel").c_str(), ImVec2(120, 0)))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+
+
+        // Settings Popup
         if (openSettings) {
 			ImGui::OpenPopup("SettingsPopup");
             openSettings = false;
@@ -522,12 +629,167 @@ void UI::SetLanguage(const std::string& language)
     m_LanguageManager.Load("Source/Assets/lang_" + m_Language + ".json");
 }
 
-void UI::SetExport(bool value)
+void UI::ExportImage()
 {
-	exportFile = value;
+    if (!m_Canvas)
+        return;
+
+    // Prepare the file extension based on the selected format
+    std::string fileExtension;
+    switch (m_SelectedFormat)
+    {
+    case 0: fileExtension = ".png"; break;
+    case 1: fileExtension = ".jpg"; break;
+    case 2: fileExtension = ".bmp"; break;
+    default: fileExtension = ".png"; break;
+    }
+
+    // Ensure filename has proper extension
+    std::string fileName = m_ExportFileName;
+    std::string extension = fileName.substr(fileName.find_last_of(".") + 1);
+
+    // If no extension or different extension, add the correct one
+    if (fileName.find(".") == std::string::npos ||
+        (extension != "png" && extension != "jpg" && extension != "bmp"))
+    {
+        fileName += fileExtension;
+    }
+
+    // Build full path
+    std::string fullPath;
+    if (m_ExportFilePath.empty())
+    {
+        fullPath = fileName;
+    }
+    else
+    {
+        // Ensure path has trailing slash
+        if (m_ExportFilePath.back() != '/' && m_ExportFilePath.back() != '\\')
+        {
+            m_ExportFilePath += '/';
+        }
+        fullPath = m_ExportFilePath + fileName;
+    }
+
+    // Export based on format
+    bool success = false;
+    switch (m_SelectedFormat)
+    {
+    case 0: // PNG
+        success = m_Canvas->ExportToPNG(fullPath);
+        break;
+    case 1: // JPG
+        success = m_Canvas->ExportToJPG(fullPath);
+        break;
+    case 2: // BMP
+        success = m_Canvas->ExportToBMP(fullPath);
+        break;
+    }
+
+    // You could add a notification system to inform the user of the export status
+    if (success) {
+        // Set a notification flag or add to a notification queue
+        ShowNotification(m_LanguageManager.Get("export_success"));
+    }
+    else {
+        ShowNotification(m_LanguageManager.Get("export_failure"));
+    }
 }
 
-bool UI::GetExport() const
+void UI::ShowNotification(const std::string& message, bool isError) {
+    Notification notification;
+    notification.message = message;
+    notification.timeRemaining = 3.0f; // Show for 3 seconds
+    notification.isError = isError;
+    m_Notifications.push_back(notification);
+}
+
+void UI::RenderNotifications() {
+    const float NOTIFICATION_WIDTH = 300.0f;
+    const float NOTIFICATION_HEIGHT = 60.0f;
+    const float NOTIFICATION_PADDING = 10.0f;
+
+    ImGuiIO& io = ImGui::GetIO();
+    float deltaTime = io.DeltaTime;
+
+    // Update notification times and remove expired ones
+    for (auto it = m_Notifications.begin(); it != m_Notifications.end();) {
+        it->timeRemaining -= deltaTime;
+        if (it->timeRemaining <= 0) {
+            it = m_Notifications.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+
+    // Render active notifications
+    float yPos = 50.0f; // Start from top
+
+    for (const auto& notification : m_Notifications) {
+        ImVec2 pos(io.DisplaySize.x - NOTIFICATION_WIDTH - NOTIFICATION_PADDING, yPos);
+        ImVec2 size(NOTIFICATION_WIDTH, NOTIFICATION_HEIGHT);
+
+        ImGui::SetNextWindowPos(pos);
+        ImGui::SetNextWindowSize(size);
+
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration |
+            ImGuiWindowFlags_NoInputs |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoSavedSettings |
+            ImGuiWindowFlags_NoFocusOnAppearing |
+            ImGuiWindowFlags_NoBringToFrontOnFocus;
+
+        // Set window color based on notification type
+        if (notification.isError) {
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.7f, 0.0f, 0.0f, 0.9f));
+        }
+        else {
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.5f, 0.0f, 0.9f));
+        }
+
+        // Calculate alpha for fade out effect
+        float alpha = notification.timeRemaining < 1.0f ? notification.timeRemaining : 1.0f;
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+
+        // Begin window with unique ID
+        ImGui::Begin(("##Notification" + std::to_string((intptr_t)&notification)).c_str(), nullptr, flags);
+
+        // Center text
+        float textWidth = ImGui::CalcTextSize(notification.message.c_str()).x;
+        float textX = (NOTIFICATION_WIDTH - textWidth) * 0.5f;
+        float textY = (NOTIFICATION_HEIGHT - ImGui::GetTextLineHeight()) * 0.5f;
+
+        ImGui::SetCursorPos(ImVec2(textX, textY));
+        ImGui::Text("%s", notification.message.c_str());
+
+        ImGui::End();
+        ImGui::PopStyleVar();
+        ImGui::PopStyleColor();
+
+        yPos += NOTIFICATION_HEIGHT + NOTIFICATION_PADDING;
+    }
+}
+
+std::string UI::ShowFileDialog()
 {
-	return exportFile;
+    nfdchar_t* outPath = nullptr;
+    nfdresult_t result = NFD_PickFolder(nullptr, &outPath);
+
+    std::string resultPath;
+    if (result == NFD_OKAY && outPath)
+    {
+        resultPath = outPath;
+        free(outPath);
+    }
+    else if (result == NFD_CANCEL)
+    {
+        printf("User pressed cancel.\n");
+    }
+    else
+    {
+        printf("Error: %s\n", NFD_GetError());
+    }
+
+    return resultPath;
 }

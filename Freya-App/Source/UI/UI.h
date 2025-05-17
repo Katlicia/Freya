@@ -4,6 +4,9 @@
 #include <imgui-SFML.h>
 #include <Core/LocalizationManager.h>
 #include "Tools/BrushType.h"
+#include "Tools/Canvas.h"
+#include <nfd.h>
+#include <filesystem>
 
 namespace FRE {
 	class UI
@@ -15,11 +18,14 @@ namespace FRE {
 		void Render(sf::RenderWindow& window);
 		void Update(sf::Time deltaTime);
 		void HandleEvent(const sf::Event& event);
+		
 		sf::Color GetColor();
 		sf::Color ConvertToSFMLColor();
 
 		float GetBrushSize();
 		float GetSpacing();
+
+		void SetCanvas(Canvas* canvas);
 
 		BrushType GetBrushType();
 
@@ -31,8 +37,12 @@ namespace FRE {
 		std::string GetLanguage();
 		void SetLanguage(const std::string& language);
 
-		void SetExport(bool value);
-		bool GetExport() const;
+		void ExportImage();
+
+		void ShowNotification(const std::string& message, bool isError = false);
+		void RenderNotifications();
+
+		std::string ShowFileDialog();
 
 	private:
 		void ShowMainMenuBar();
@@ -43,6 +53,8 @@ namespace FRE {
 
 		sf::RenderWindow& m_Window;
 		LocalizationManager m_LanguageManager;
+		Canvas* m_Canvas = nullptr;
+
 
 		int fontSize = 18;
 		int maxFontSize = 30;
@@ -53,8 +65,6 @@ namespace FRE {
 		std::string m_Language;
 		std::string currentLangLabel;
 
-		bool exportFile = false;
-
 		BrushType m_BrushType = BrushType::BRUSH;
 
 		float m_Color[4] = { (float)0 / 255, (float)0 / 255, (float)0 / 255 , (float) 255 / 255 };
@@ -64,6 +74,21 @@ namespace FRE {
 		// UI Window management
 		const float snapThreshold = 20.0f;  // Snap when within 20 pixels of the edge
 		bool openSettings = false;
+
+		// Export settings
+		bool openExportDialog = false;
+		std::string m_ExportFilePath = "";
+		std::string m_ExportFileName = "";
+		int m_SelectedFormat = 0; // 0: PNG, 1: JPEG, 2: BMP
+
+		// Notifs
+		struct Notification {
+			std::string message;
+			float timeRemaining;
+			bool isError;
+		};
+		std::vector<Notification> m_Notifications;
+
 	};
 }
 

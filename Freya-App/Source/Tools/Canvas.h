@@ -17,6 +17,8 @@ namespace FRE {
 		sf::RenderTexture& GetRenderTexture();
 
 		bool ExportToPNG(const std::string& filename);
+		bool ExportToJPG(const std::string& filename);
+		bool ExportToBMP(const std::string& filename);
 
 		void CreateTransparencyPattern();
 		void DrawTransparencyPattern(sf::RenderTarget& target);

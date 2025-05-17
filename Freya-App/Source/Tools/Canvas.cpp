@@ -87,6 +87,18 @@ bool Canvas::ExportToPNG(const std::string& filename) {
 	return image.saveToFile(filename);
 }
 
+bool Canvas::ExportToJPG(const std::string& filename) {
+	sf::Texture texture = GetRenderTexture().getTexture();
+	sf::Image image = texture.copyToImage();
+	return image.saveToFile(filename);
+}
+
+bool Canvas::ExportToBMP(const std::string& filename) {
+	sf::Texture texture = GetRenderTexture().getTexture();
+	sf::Image image = texture.copyToImage();
+	return image.saveToFile(filename);
+}
+
 sf::Sprite& Canvas::GetSprite()
 {
 	if (!m_Sprite.has_value())
