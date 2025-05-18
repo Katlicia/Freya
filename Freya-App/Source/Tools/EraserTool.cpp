@@ -22,6 +22,8 @@ void EraserTool::HandleEvent(const sf::Event& event, const sf::RenderWindow& win
         {
             if (canvasBounds.contains(mouseWorldPos))
             {
+                // Save canvas state before begining a new drawing operation
+                m_Canvas.BeginDrawOperation();
                 m_IsErasing = true;
                 m_LastPosition = mouseWorldPos - m_Canvas.GetSprite().getPosition();
                 m_AccumulatedDistance = 0.f; // Reset accumulated distance when starting new erasing
@@ -41,6 +43,7 @@ void EraserTool::HandleEvent(const sf::Event& event, const sf::RenderWindow& win
 
     if (const auto* mouseEvent = event.getIf<sf::Event::MouseButtonReleased>())
     {
+        m_Canvas.EndDrawOperation(); // Save the current state of the canvas
         m_IsErasing = false;
     }
 }

@@ -23,6 +23,9 @@ void DrawingTool::HandleEvent(const sf::Event& event, const sf::RenderWindow& wi
         {
             if (canvasBounds.contains(mouseWorldPos))
             {
+				// Save canvas state before begining a new drawing operation
+                m_Canvas.BeginDrawOperation();
+
                 m_IsDrawing = true;
                 m_LastPosition = mouseWorldPos - m_Canvas.GetSprite().getPosition();
                 m_AccumulatedDistance = 0.f; // Reset accumulated distance when starting new drawing
@@ -38,6 +41,7 @@ void DrawingTool::HandleEvent(const sf::Event& event, const sf::RenderWindow& wi
 
     if (const auto* mouseEvent = event.getIf<sf::Event::MouseButtonReleased>())
     {
+		m_Canvas.EndDrawOperation(); // Save the current state of the canvas
         m_IsDrawing = false;
     }
 }

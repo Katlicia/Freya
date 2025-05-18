@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <stack>
 
 namespace FRE {
 
@@ -24,6 +25,14 @@ namespace FRE {
 		void CreateTransparencyPattern();
 		void DrawTransparencyPattern(sf::RenderTarget& target);
 
+		// Undo System
+		void SaveState();
+		bool Undo();
+		bool CanUndo() const;
+
+		void BeginDrawOperation();
+		void EndDrawOperation();
+
 
 	private:
 		sf::RenderTexture m_RenderTexture;
@@ -34,6 +43,15 @@ namespace FRE {
 		std::optional<sf::Sprite> m_TransparencyPatternSprite;
 		bool m_HasTransparencyPattern = false;
 		bool m_Transparant = false;
+
+		struct CanvasState {
+			sf::Image image;
+			sf::Vector2u size;
+		};
+
+		std::stack<CanvasState> m_UndoStack;
+		const size_t MAX_UNDO_STEPS = 20;
+		bool m_IsDrawingOperation = false;
 	};
 
 }

@@ -66,18 +66,29 @@ void UI::Update(sf::Time deltaTime) {
 void UI::HandleEvent(const sf::Event& event) {
 	ImGui::SFML::ProcessEvent(m_Window, event);
 
-	if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
-	{
-		if (keyPressed->scancode == sf::Keyboard::Scancode::B)
-		{
-			m_BrushType = BrushType::BRUSH;
-		}
+    if (CanDraw()) 
+    {
+	    if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
+	    {
+		    if (keyPressed->scancode == sf::Keyboard::Scancode::B)
+		    {
+			    m_BrushType = BrushType::BRUSH;
+		    }
 
-		if (keyPressed->scancode == sf::Keyboard::Scancode::E)
-		{
-			m_BrushType = BrushType::ERASER;
-		}
-	}
+		    if (keyPressed->scancode == sf::Keyboard::Scancode::E)
+		    {
+			    m_BrushType = BrushType::ERASER;
+		    }
+
+            if (keyPressed->scancode == sf::Keyboard::Scancode::Z && keyPressed->control)
+            {
+                if (m_Canvas->CanUndo())
+                {
+                    m_Canvas->Undo();
+                }
+            }
+	    }
+    }
 }
 
 void UI::Render(sf::RenderWindow& window) {
@@ -858,7 +869,7 @@ void UI::ResizeCanvas(int width, int height)
 {
 	if (m_Canvas)
 	{
-        /*32768*/
+        m_Canvas->BeginDrawOperation();
 		if (width < 1 || height < 1 || width > 32768 || height > 32768)
 		{
 			ShowNotification(m_LanguageManager.Get("invalid_size"), true);
@@ -867,5 +878,6 @@ void UI::ResizeCanvas(int width, int height)
 		m_Canvas->SetSize(width, height);
 		m_CanvasWidth = width;
 		m_CanvasHeight = height;
+        m_Canvas->EndDrawOperation();
 	}
 }

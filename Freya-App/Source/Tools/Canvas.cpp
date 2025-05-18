@@ -1,4 +1,5 @@
 #include "Canvas.h"
+#include <iostream>
 
 using namespace FRE;
 
@@ -205,4 +206,83 @@ void Canvas::DrawTransparencyPattern(sf::RenderTarget& target)
 		m_TransparencyPatternSprite->setPosition(m_Sprite->getPosition());
 		target.draw(*m_TransparencyPatternSprite);
 	}
+}
+
+void Canvas::SaveState()
+{
+	if (m_UndoStack.size() >= MAX_UNDO_STEPS)
+	{
+		m_UndoStack.pop();
+	}
+
+	CanvasState state;
+	state.image = m_RenderTexture.getTexture().copyToImage();
+	state.size = m_Size;
+
+	m_UndoStack.push(std::move(state));
+}
+
+bool Canvas::Undo()
+{
+	if (m_UndoStack.empty())
+		return false;
+
+	CanvasState state = std::move(m_UndoStack.top());
+	m_UndoStack.pop();
+
+	if (state.size != m_Size)
+	{
+		m_Size = state.size;
+		if (!m_RenderTexture.resize(m_Size))
+		{
+			std::cerr << "Failed to resize RenderTexture during undo operation" << std::endl;
+			return false;
+		}
+	}
+
+	sf::Texture texture;
+	if (!texture.loadFromImage(state.image))
+	{
+		std::cerr << "Failed to load texture from image during undo operation" << std::endl;
+		return false;
+	}
+
+	if (m_Transparant)
+	{
+		m_RenderTexture.clear(sf::Color(255, 255, 255, 0));
+	}
+	else
+	{
+		m_RenderTexture.clear(sf::Color::White);
+	}
+
+	sf::Sprite restoreSprite(texture);
+	m_RenderTexture.draw(restoreSprite);
+	m_RenderTexture.display();
+
+	if (m_Sprite.has_value())
+	{
+		m_Sprite->setTexture(m_RenderTexture.getTexture(), true);
+	}
+
+	return true;
+}
+
+bool Canvas::CanUndo() const
+{
+	return !m_UndoStack.empty();
+}
+
+void Canvas::BeginDrawOperation()
+{
+	if (!m_IsDrawingOperation)
+	{
+		SaveState();
+		m_IsDrawingOperation = true;
+	}
+}
+
+void Canvas::EndDrawOperation()
+{
+	m_IsDrawingOperation = false;
 }
