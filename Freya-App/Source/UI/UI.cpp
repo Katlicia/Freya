@@ -49,6 +49,8 @@ UI::~UI()
 
 void UI::SetCanvas(Canvas* canvas) {
 	m_Canvas = canvas;
+	m_CanvasWidth = m_Canvas->GetSize().x;
+	m_CanvasHeight = m_Canvas->GetSize().y;
 }
 
 void UI::Update(sf::Time deltaTime) {
@@ -99,6 +101,7 @@ void UI::ShowMainMenuBar() {
             if (ImGui::MenuItem(m_LanguageManager.Get("export").c_str())) 
             {
                 openExportDialog = true;
+
             }
             ImGui::EndMenu();
         }
@@ -119,7 +122,12 @@ void UI::ShowMainMenuBar() {
 
         if (ImGui::BeginMenu(m_LanguageManager.Get("display").c_str()))
         {
-            if (ImGui::MenuItem(m_LanguageManager.Get("resize").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("resize").c_str())) 
+            {
+				openResizeDialog = true;
+                m_ResizeWidth = m_CanvasWidth;
+                m_ResizeHeight = m_CanvasHeight;
+            }
             if (ImGui::MenuItem(m_LanguageManager.Get("horizontal_turn").c_str())) { /* ... */ }
             if (ImGui::MenuItem(m_LanguageManager.Get("vertical_turn").c_str())) { /* ... */ }
             if (ImGui::MenuItem(m_LanguageManager.Get("90_clock_rotate").c_str())) { /* ... */ }
@@ -127,6 +135,53 @@ void UI::ShowMainMenuBar() {
             if (ImGui::MenuItem(m_LanguageManager.Get("180_rotate").c_str())) { /* ... */ }
 
             ImGui::EndMenu();
+        }
+
+        if (openResizeDialog) {
+            ImGui::OpenPopup("ResizePopup");
+            openResizeDialog = false;
+        }
+
+        if (ImGui::BeginPopup("ResizePopup"))
+        {
+            ImGui::Text(m_LanguageManager.Get("resize").c_str());
+            ImGui::Separator();
+            ImVec2 size(400, 6 * fontSize);
+            ImGui::BeginChild("ResizePanel", size, true);
+
+            // Calculate positions for aligned layout
+            const float labelWidth = 120.0f;
+            const float inputWidth = 150.0f;
+
+            // Width
+
+            ImGui::Text(m_LanguageManager.Get("width").c_str());
+            ImGui::SameLine(labelWidth);
+            ImGui::SetNextItemWidth(inputWidth);
+            ImGui::InputInt("##Width", &m_ResizeWidth, 1, 10);
+
+            // Height
+            ImGui::Text(m_LanguageManager.Get("height").c_str());
+            ImGui::SameLine(labelWidth);
+            ImGui::SetNextItemWidth(inputWidth);
+            ImGui::InputInt("##Height", &m_ResizeHeight, 1, 10);
+
+            ImGui::EndChild(); // End ResizePanel
+            ImGui::Separator();
+
+            // Resize & Cancel Buttons
+            if (ImGui::Button(m_LanguageManager.Get("cancel").c_str(), ImVec2(120, 0)))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(m_LanguageManager.Get("resize_button").c_str(), ImVec2(120, 0)))
+            {
+                // Implement ResizeCanvas function that applies the new dimensions
+                ResizeCanvas(m_ResizeWidth, m_ResizeHeight);
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
         }
 
         if (ImGui::BeginMenu(m_LanguageManager.Get("layers").c_str()))
@@ -159,44 +214,43 @@ void UI::ShowMainMenuBar() {
             strftime(buffer, sizeof(buffer), "image_%Y%m%d_%H%M%S", timeinfo);
             m_ExportFileName = buffer;
         }
-
         if (ImGui::BeginPopup("ExportPopup"))
         {
             ImGui::Text(m_LanguageManager.Get("export").c_str());
             ImGui::Separator();
+            ImVec2 size(25 * fontSize, 10 * fontSize);
+            ImGui::BeginChild("ExportPanel", size, true);
 
-            ImVec2 size(400, 200);
+            // Calculate positions for aligned layout
+            const float labelWidth = fontSize * 5;
+			const float inputWidth = 250.0f; // Fixed width for inputs
 
             // File Name
             ImGui::Text(m_LanguageManager.Get("file_name").c_str());
-            ImGui::SameLine();
-
+            ImGui::SameLine(labelWidth); // Fixed position for inputs
+            ImGui::SetNextItemWidth(inputWidth);
             char fileNameBuffer[256];
             strncpy(fileNameBuffer, m_ExportFileName.c_str(), sizeof(fileNameBuffer));
             fileNameBuffer[sizeof(fileNameBuffer) - 1] = 0;
-
             if (ImGui::InputText("##FileName", fileNameBuffer, sizeof(fileNameBuffer)))
             {
                 m_ExportFileName = fileNameBuffer;
             }
 
+            // File Path
             ImGui::Text(m_LanguageManager.Get("file_path").c_str());
-            ImGui::SameLine();
-
+            ImGui::SameLine(labelWidth);
+            ImGui::SetNextItemWidth(inputWidth);
             char filePathBuffer[256];
             strncpy(filePathBuffer, m_ExportFilePath.c_str(), sizeof(filePathBuffer));
             filePathBuffer[sizeof(filePathBuffer) - 1] = 0;
-
             if (ImGui::InputText("##FilePath", filePathBuffer, sizeof(filePathBuffer)))
             {
                 m_ExportFilePath = filePathBuffer;
             }
 
-            // Format selection
-            //ImGui::Text(m_LanguageManager.Get("format").c_str());
+            // Browse button on the same line as the path input but after it
             ImGui::SameLine();
-
-            // Browse button to open folder picker
             if (ImGui::Button(m_LanguageManager.Get("browse").c_str()))
             {
                 std::string selectedPath = ShowFileDialog();
@@ -206,12 +260,12 @@ void UI::ShowMainMenuBar() {
                 }
             }
 
+            // Format Selection
             ImGui::Text(m_LanguageManager.Get("format").c_str());
-            ImGui::SameLine();
-
+            ImGui::SameLine(labelWidth);
+            ImGui::SetNextItemWidth(inputWidth);
             const char* formats[] = { "PNG", "JPG", "BMP" };
             const char* currentFormat = formats[m_SelectedFormat];
-
             if (ImGui::BeginCombo("##Format", currentFormat))
             {
                 for (int i = 0; i < IM_ARRAYSIZE(formats); i++)
@@ -221,26 +275,26 @@ void UI::ShowMainMenuBar() {
                     {
                         m_SelectedFormat = i;
                     }
-
                     if (isSelected)
                         ImGui::SetItemDefaultFocus();
                 }
                 ImGui::EndCombo();
             }
 
+            ImGui::EndChild(); // End ExportPanel
             ImGui::Separator();
 
-            // Buttons
-            if (ImGui::Button(m_LanguageManager.Get("export").c_str(), ImVec2(120, 0)))
+            // Export & Cancel Buttons
+            if (ImGui::Button(m_LanguageManager.Get("cancel").c_str(), ImVec2(150, 0)))
             {
-                ExportImage();
                 ImGui::CloseCurrentPopup();
             }
 
             ImGui::SameLine();
 
-            if (ImGui::Button(m_LanguageManager.Get("cancel").c_str(), ImVec2(120, 0)))
+            if (ImGui::Button(m_LanguageManager.Get("export").c_str(), ImVec2(150, 0)))
             {
+                ExportImage();
                 ImGui::CloseCurrentPopup();
             }
 
@@ -366,10 +420,16 @@ void UI::ShowMainMenuBar() {
 
 void UI::ShowColorPicker() {
     ImGuiIO& io = ImGui::GetIO();
-    const ImVec2 windowSize = ImVec2(340, 305);
-	const ImVec2 desiredPos = ImVec2(0.0f, io.DisplaySize.y - windowSize.y);
+
+    const ImVec2 minSize = ImVec2(300, 250); // Minimum size for the toolbar
+    const ImVec2 maxSize = ImVec2(600, 550); // Maximum size for the toolbar
+    const ImVec2 defaultSize = ImVec2(340, 305); // Default window size
+
+    ImGui::SetNextWindowSizeConstraints(minSize, maxSize);
+
+	const ImVec2 desiredPos = ImVec2(0.0f, io.DisplaySize.y - defaultSize.y);
 	ImGui::SetNextWindowPos(desiredPos, ImGuiCond_FirstUseEver);	
-    ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(defaultSize, ImGuiCond_FirstUseEver);
 
 	//ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);         // Corner roundness
 	//ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);        // Border thickness
@@ -382,7 +442,7 @@ void UI::ShowColorPicker() {
 	//ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0, 255, 0, 255));    // Border
 	//ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0, 0, 255, 255));    // Border
 
-    ImGui::Begin(m_LanguageManager.Get("color_picker_title").c_str(), nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings);
+    ImGui::Begin(m_LanguageManager.Get("color_picker_title").c_str(), nullptr, ImGuiWindowFlags_NoSavedSettings);
 
 
     // Snap logic:
@@ -692,7 +752,7 @@ void UI::ExportImage()
         ShowNotification(m_LanguageManager.Get("export_success"));
     }
     else {
-        ShowNotification(m_LanguageManager.Get("export_failure"));
+        ShowNotification(m_LanguageManager.Get("export_failure"), true);
     }
 }
 
@@ -705,8 +765,8 @@ void UI::ShowNotification(const std::string& message, bool isError) {
 }
 
 void UI::RenderNotifications() {
-    const float NOTIFICATION_WIDTH = 300.0f;
-    const float NOTIFICATION_HEIGHT = 60.0f;
+    const float NOTIFICATION_WIDTH = 200.0f;
+    const float NOTIFICATION_HEIGHT = 50.0f;
     const float NOTIFICATION_PADDING = 10.0f;
 
     ImGuiIO& io = ImGui::GetIO();
@@ -724,7 +784,7 @@ void UI::RenderNotifications() {
     }
 
     // Render active notifications
-    float yPos = 50.0f; // Start from top
+    float yPos = io.DisplaySize.y - NOTIFICATION_HEIGHT * 2; // Start from top
 
     for (const auto& notification : m_Notifications) {
         ImVec2 pos(io.DisplaySize.x - NOTIFICATION_WIDTH - NOTIFICATION_PADDING, yPos);
@@ -792,4 +852,20 @@ std::string UI::ShowFileDialog()
     }
 
     return resultPath;
+}
+
+void UI::ResizeCanvas(int width, int height)
+{
+	if (m_Canvas)
+	{
+        /*32768*/
+		if (width < 1 || height < 1 || width > 32768 || height > 32768)
+		{
+			ShowNotification(m_LanguageManager.Get("invalid_size"), true);
+			return;
+		}
+		m_Canvas->SetSize(width, height);
+		m_CanvasWidth = width;
+		m_CanvasHeight = height;
+	}
 }

@@ -9,21 +9,33 @@ Canvas::Canvas()
 	{
 		throw std::runtime_error("Failed to create RenderTexture");
 	}
-	m_RenderTexture.clear(sf::Color::White);
-	//m_RenderTexture.clear(sf::Color(255, 255, 255, 0));
+	if (m_Transparant)
+	{
+		m_RenderTexture.clear(sf::Color(255, 255, 255, 0));
+	}
+	else
+	{
+		m_RenderTexture.clear(sf::Color::White);
+	}
 	m_Sprite.emplace(m_RenderTexture.getTexture());
 
 	CreateTransparencyPattern();
 }
 
-Canvas::Canvas(unsigned int width, unsigned height) : m_Size({ width, height })
+Canvas::Canvas(unsigned int width, unsigned height, bool transparant = false) : m_Size({ width, height }), m_Transparant(transparant)
 {
 	if (!m_RenderTexture.resize({ m_Size.x, m_Size.y }))
 	{
 		throw std::runtime_error("Failed to create RenderTexture");
 	}
-	m_RenderTexture.clear(sf::Color::White);
-	//m_RenderTexture.clear(sf::Color(255, 255, 255, 0));
+	if (m_Transparant)
+	{
+		m_RenderTexture.clear(sf::Color(255, 255, 255, 0));
+	}
+	else
+	{
+		m_RenderTexture.clear(sf::Color::White);
+	}
 	m_Sprite.emplace(m_RenderTexture.getTexture());
 
 	CreateTransparencyPattern();
@@ -79,6 +91,45 @@ void Canvas::Display()
 sf::Vector2u Canvas::GetSize()
 {
 	return m_Size;
+}
+
+void Canvas::SetSize(unsigned int width, unsigned int height)
+{
+	// Keep old content
+	sf::Texture oldTex = m_RenderTexture.getTexture();
+	sf::Image  oldImg = oldTex.copyToImage();
+
+	// Resize RenderTexture
+	m_Size.x = width;
+	m_Size.y = height;
+	if (!m_RenderTexture.resize({ m_Size.x, m_Size.y }))
+		throw std::runtime_error("Failed to resize RenderTexture");
+
+	if (m_Transparant)
+	{
+		m_RenderTexture.clear(sf::Color(255, 255, 255, 0));
+	}
+	else
+	{
+		m_RenderTexture.clear(sf::Color::White);
+	}
+
+	// Draw old content with sprite
+	sf::Texture tmpTex;
+	tmpTex.loadFromImage(oldImg);
+	sf::Sprite  tmpSpr(tmpTex);
+	// Scalable
+	// tmpSpr.setScale(width / float(oldImg.getSize().x), height / float(oldImg.getSize().y));
+	m_RenderTexture.draw(tmpSpr);
+
+	m_RenderTexture.display();
+	m_Sprite->setTexture(m_RenderTexture.getTexture(), true);
+
+	// Update transparency pattern
+	if (m_HasTransparencyPattern) {
+		m_TransparencyPatternSprite->setTextureRect(
+			sf::IntRect({ 0,0 }, { int(width), int(height) }));
+	}
 }
 
 bool Canvas::ExportToPNG(const std::string& filename) {

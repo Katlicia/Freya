@@ -22,6 +22,8 @@ namespace FRE {
 		sf::Color GetColor();
 		sf::Color ConvertToSFMLColor();
 
+		void ResizeCanvas(int width, int height);
+
 		float GetBrushSize();
 		float GetSpacing();
 
@@ -54,7 +56,10 @@ namespace FRE {
 		sf::RenderWindow& m_Window;
 		LocalizationManager m_LanguageManager;
 		Canvas* m_Canvas = nullptr;
-
+		unsigned int m_CanvasWidth;
+		unsigned int m_CanvasHeight;
+		int m_ResizeWidth;
+		int m_ResizeHeight;
 
 		int fontSize = 18;
 		int maxFontSize = 30;
@@ -74,9 +79,10 @@ namespace FRE {
 		// UI Window management
 		const float snapThreshold = 20.0f;  // Snap when within 20 pixels of the edge
 		bool openSettings = false;
+		bool openExportDialog = false;
+		bool openResizeDialog = false;
 
 		// Export settings
-		bool openExportDialog = false;
 		std::string m_ExportFilePath = "";
 		std::string m_ExportFileName = "";
 		int m_SelectedFormat = 0; // 0: PNG, 1: JPEG, 2: BMP

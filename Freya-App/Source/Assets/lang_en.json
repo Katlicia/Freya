@@ -26,6 +26,10 @@
 	
 	"display": "Display",
 	"resize": "Resize Canvas",
+	"resize_button": "Resize",
+	"width": "Width",
+	"height": "Height",
+	"invalid_size": "Invalid Canvas Size",
 	"horizontal_turn": "Turn Horizontal",
 	"vertical_turn": "Turn Vertical",
 	"90_clock_rotate": "Rotate 90° Clockwise",

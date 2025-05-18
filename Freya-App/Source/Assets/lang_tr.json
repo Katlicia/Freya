@@ -24,7 +24,11 @@
 	"zoomout": "Uzaklaştır",
 	
 	"display": "Görüntü",
-	"resize": "Yeniden Boyutlandır",
+	"resize": "Tuvali Yeniden Boyutlandır",
+	"resize_button": "Boyutlandır", 
+	"width": "Genişlik",
+	"height": "Yükseklik",
+	"invalid_size": "Geçersiz Tuval  Boyutu",
 	"horizontal_turn": "Yatay Çevir",
 	"vertical_turn": "Dikey Çevir",
 	"90_clock_rotate": "90° Saat Yönünde Döndür",
