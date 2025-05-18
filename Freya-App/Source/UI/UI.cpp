@@ -119,7 +119,13 @@ void UI::ShowMainMenuBar() {
 
         if (ImGui::BeginMenu(m_LanguageManager.Get("edit").c_str()))
         {
-            if (ImGui::MenuItem(m_LanguageManager.Get("undo").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("undo").c_str()))
+            {
+                if (m_Canvas->CanUndo())
+                {
+                    m_Canvas->Undo();
+                }
+            }
             ImGui::EndMenu();
         }
 
