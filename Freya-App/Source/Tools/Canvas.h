@@ -50,7 +50,6 @@ namespace FRE {
 		};
 
 		std::stack<CanvasState> m_UndoStack;
-		const size_t MAX_UNDO_STEPS = 20;
 		bool m_IsDrawingOperation = false;
 	};
 

@@ -210,11 +210,6 @@ void Canvas::DrawTransparencyPattern(sf::RenderTarget& target)
 
 void Canvas::SaveState()
 {
-	if (m_UndoStack.size() >= MAX_UNDO_STEPS)
-	{
-		m_UndoStack.pop();
-	}
-
 	CanvasState state;
 	state.image = m_RenderTexture.getTexture().copyToImage();
 	state.size = m_Size;
@@ -224,6 +219,7 @@ void Canvas::SaveState()
 
 bool Canvas::Undo()
 {
+
 	if (m_UndoStack.empty())
 		return false;
 
