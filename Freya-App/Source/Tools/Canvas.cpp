@@ -306,3 +306,114 @@ void Canvas::EndDrawOperation()
 {
 	m_IsDrawingOperation = false;
 }
+void Canvas::Rotate90()
+{
+	SaveState();
+	sf::Image src = m_RenderTexture.getTexture().copyToImage();
+	sf::Vector2u size = src.getSize();
+	sf::Image dest(sf::Vector2u(size.y, size.x));
+
+	for (unsigned int x = 0; x < size.x; ++x)
+		for (unsigned int y = 0; y < size.y; ++y)
+			dest.setPixel({ size.y - y - 1, x }, src.getPixel({ x, y }));
+
+	SetSize(size.y, size.x);
+	sf::Color clearColor = m_Transparent ? sf::Color(0, 0, 0, 0) : sf::Color::White;
+	m_RenderTexture.clear(clearColor);
+
+	sf::Texture tmpTex;
+	tmpTex.loadFromImage(dest);
+	sf::RenderStates states;
+	states.blendMode = sf::BlendNone;
+	m_RenderTexture.draw(sf::Sprite(tmpTex), states);
+	m_RenderTexture.display();
+}
+
+void Canvas::RotateCounterClockwise90()
+{
+	SaveState();
+	sf::Image src = m_RenderTexture.getTexture().copyToImage();
+	sf::Vector2u size = src.getSize();
+	sf::Image dest(sf::Vector2u(size.y, size.x));
+
+	for (unsigned int x = 0; x < size.x; ++x)
+		for (unsigned int y = 0; y < size.y; ++y)
+			dest.setPixel({ y, size.x - x - 1 }, src.getPixel({ x, y }));
+
+	SetSize(size.y, size.x);
+	sf::Color clearColor = m_Transparent ? sf::Color(0, 0, 0, 0) : sf::Color::White;
+	m_RenderTexture.clear(clearColor);
+
+	sf::Texture tmpTex;
+	tmpTex.loadFromImage(dest);
+	sf::RenderStates states;
+	states.blendMode = sf::BlendNone;
+	m_RenderTexture.draw(sf::Sprite(tmpTex), states);
+	m_RenderTexture.display();
+}
+
+void Canvas::Rotate180()
+{
+	SaveState();
+	sf::Image src = m_RenderTexture.getTexture().copyToImage();
+	sf::Vector2u size = src.getSize();
+	sf::Image dest(size);
+
+	for (unsigned int x = 0; x < size.x; ++x)
+		for (unsigned int y = 0; y < size.y; ++y)
+			dest.setPixel({ size.x - x - 1, size.y - y - 1 }, src.getPixel({ x, y }));
+
+	sf::Color clearColor = m_Transparent ? sf::Color(0, 0, 0, 0) : sf::Color::White;
+	m_RenderTexture.clear(clearColor);
+
+	sf::Texture tmpTex;
+	tmpTex.loadFromImage(dest);
+	sf::RenderStates states;
+	states.blendMode = sf::BlendNone;
+	m_RenderTexture.draw(sf::Sprite(tmpTex), states);
+	m_RenderTexture.display();
+}
+
+void Canvas::FlipHorizontal()
+{
+	SaveState();
+	sf::Image src = m_RenderTexture.getTexture().copyToImage();
+	sf::Vector2u size = src.getSize();
+	sf::Image dest(size);
+
+	for (unsigned int x = 0; x < size.x; ++x)
+		for (unsigned int y = 0; y < size.y; ++y)
+			dest.setPixel({ size.x - x - 1, y }, src.getPixel({ x, y }));
+
+	sf::Color clearColor = m_Transparent ? sf::Color(0, 0, 0, 0) : sf::Color::White;
+	m_RenderTexture.clear(clearColor);
+
+	sf::Texture tmpTex;
+	tmpTex.loadFromImage(dest);
+	sf::RenderStates states;
+	states.blendMode = sf::BlendNone;
+	m_RenderTexture.draw(sf::Sprite(tmpTex), states);
+	m_RenderTexture.display();
+}
+
+void Canvas::FlipVertical()
+{
+	SaveState();
+	sf::Image src = m_RenderTexture.getTexture().copyToImage();
+	sf::Vector2u size = src.getSize();
+	sf::Image dest(size);
+
+	for (unsigned int x = 0; x < size.x; ++x)
+		for (unsigned int y = 0; y < size.y; ++y)
+			dest.setPixel({ x, size.y - y - 1 }, src.getPixel({ x, y }));
+
+	sf::Color clearColor = m_Transparent ? sf::Color(0, 0, 0, 0) : sf::Color::White;
+	m_RenderTexture.clear(clearColor);
+
+	sf::Texture tmpTex;
+	tmpTex.loadFromImage(dest);
+	sf::RenderStates states;
+	states.blendMode = sf::BlendNone;
+	m_RenderTexture.draw(sf::Sprite(tmpTex), states);
+	m_RenderTexture.display();
+}

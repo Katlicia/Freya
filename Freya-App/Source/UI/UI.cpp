@@ -201,15 +201,27 @@ void UI::ShowMainMenuBar() {
                 m_ResizeWidth = m_CanvasWidth;
                 m_ResizeHeight = m_CanvasHeight;
             }
-            if (ImGui::MenuItem(m_LanguageManager.Get("horizontal_turn").c_str())) { /* ... */ }
-            if (ImGui::MenuItem(m_LanguageManager.Get("vertical_turn").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("horizontal_turn").c_str())) 
+            {
+				m_Canvas->FlipHorizontal();
+            }
+            if (ImGui::MenuItem(m_LanguageManager.Get("vertical_turn").c_str())) 
+            { 
+                m_Canvas->FlipVertical();
+            }
             if (ImGui::MenuItem(m_LanguageManager.Get("90_clock_rotate").c_str())) 
             {
-				//m_Canvas->Rotate90();
+				m_Canvas->Rotate90();
 
             }
-            if (ImGui::MenuItem(m_LanguageManager.Get("90_counterclock_rotate").c_str())) { /* ... */ }
-            if (ImGui::MenuItem(m_LanguageManager.Get("180_rotate").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("90_counterclock_rotate").c_str())) 
+            { 
+				m_Canvas->RotateCounterClockwise90();
+            }
+            if (ImGui::MenuItem(m_LanguageManager.Get("180_rotate").c_str())) 
+            { 
+				m_Canvas->Rotate180();
+            }
 
             ImGui::EndMenu();
         }

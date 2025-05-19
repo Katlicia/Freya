@@ -36,7 +36,10 @@ namespace FRE {
 		void EndDrawOperation();
 
 		void Rotate90();
-
+		void RotateCounterClockwise90();
+		void Rotate180();
+		void FlipHorizontal();
+		void FlipVertical();
 
 	private:
 		sf::RenderTexture m_RenderTexture;
