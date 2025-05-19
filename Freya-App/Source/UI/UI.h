@@ -119,7 +119,7 @@ namespace FRE {
 		std::string m_ProjectDirectory = ProjectManager::GetDefaultProjectDirectory().string();
 		std::string m_LastProjectPath = "";
 
-		std::string m_OpenedProjectName = "";
+		std::string m_OpenedProjectName = "MyProject";
 
 	};
 }
