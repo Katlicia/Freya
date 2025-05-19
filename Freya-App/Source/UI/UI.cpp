@@ -234,8 +234,14 @@ void UI::ShowMainMenuBar() {
 
         if (ImGui::BeginMenu(m_LanguageManager.Get("view").c_str()))
         {
-            if (ImGui::MenuItem(m_LanguageManager.Get("zoomin").c_str())) { /* ... */ }
-            if (ImGui::MenuItem(m_LanguageManager.Get("zoomout").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("zoomin").c_str(), "25%"))
+            {
+                m_ZoomIn = true;
+            }
+            if (ImGui::MenuItem(m_LanguageManager.Get("zoomout").c_str(), "25%"))
+            {
+                m_ZoomOut = true;
+            }
             ImGui::EndMenu();
         }
         }
@@ -1127,4 +1133,24 @@ std::string UI::ShowOpenFreyaDialog()
 std::string UI::GetOpenedProjectName() const
 {
 	return m_OpenedProjectName;
+}
+
+void UI::SetZoomIn(bool zoomIn)
+{
+	m_ZoomIn = zoomIn;
+}
+
+void UI::SetZoomOut(bool zoomOut)
+{
+	m_ZoomOut = zoomOut;
+}
+
+bool UI::GetZoomIn() const
+{
+    return m_ZoomIn;
+}
+
+bool UI::GetZoomOut() const
+{
+	return m_ZoomOut;
 }

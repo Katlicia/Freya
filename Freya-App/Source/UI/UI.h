@@ -34,6 +34,12 @@ namespace FRE {
 
 		bool CanDraw() const;
 
+		void SetZoomIn(bool zoomIn);
+		void SetZoomOut(bool zoomOut);
+
+		bool GetZoomIn() const;
+		bool GetZoomOut() const;
+
 		int GetFontSize();
 		void SetFontSize(int size);
 
@@ -64,6 +70,9 @@ namespace FRE {
 		LocalizationManager m_LanguageManager;
 		Canvas* m_Canvas = nullptr;
 		std::unique_ptr<ProjectManager> m_ProjectManager;
+
+		bool m_ZoomIn = false;
+		bool m_ZoomOut = false;
 
 		unsigned int m_CanvasWidth;
 		unsigned int m_CanvasHeight;

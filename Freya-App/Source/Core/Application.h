@@ -54,9 +54,15 @@ namespace FRE {
 
 		sf::View m_View;
 		float m_InitialZoom;
-		float m_MaxZoom;
-		float m_MinZoom;
+		float m_MaxZoom = 3.f;
+		float m_MinZoom = 0.01f;
+		float m_CurrentZoom = 1.f;
 		sf::Vector2f m_InitialViewSize;
+
+		bool m_IsPanning = false;
+		sf::Vector2i m_PanStartMousePos;
+		sf::Vector2f m_PanStartViewCenter;
+
 
 		sf::Color Grey = sf::Color(74, 76, 84);
 		sf::Color m_BackgroundColor = Grey;

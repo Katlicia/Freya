@@ -57,10 +57,6 @@ Application::Application() :
 
 	m_LastBrush = m_UI->GetBrushType();
 	m_ActiveTool = m_DrawingTool.get();
-	
-	m_InitialZoom = 1.f;
-	m_MaxZoom = 1.f;
-	m_MinZoom = 0.01f;
 	m_InitialViewSize = m_View.getSize();
 }
 
@@ -135,14 +131,23 @@ void Application::ProcessEvents()
 
 		m_UI->HandleEvent(*event); // Pass event to UI
 
-		//if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-		//{
-		//	if (keyPressed->scancode == sf::Keyboard::Scancode::E)
-		//	{
-		//		m_draw = !m_draw; // Toggle between drawing and erasing
-		//		/*m_EraserTool->SetThickness(50.f);*/
-		//	}
-		//}
+		if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
+		{
+			if (mousePressed->button == sf::Mouse::Button::Middle)
+			{
+				m_IsPanning = true;
+				m_PanStartMousePos = sf::Mouse::getPosition(m_Window);
+				m_PanStartViewCenter = m_View.getCenter();
+			}
+		}
+
+		if (const auto* mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
+		{
+			if (mouseReleased->button == sf::Mouse::Button::Middle)
+			{
+				m_IsPanning = false;
+			}
+		}
 
 
 		if (const auto* wheelScroll = event->getIf<sf::Event::MouseWheelScrolled>())
@@ -150,29 +155,28 @@ void Application::ProcessEvents()
 			if (wheelScroll->wheel == sf::Mouse::Wheel::Vertical)
 			{
 				// Calculate current zoom level based on the initial view size
-				float currentZoom = m_View.getSize().x / m_InitialViewSize.x;
+				//float currentZoom = m_View.getSize().x / m_InitialViewSize.x;
 
 				if (wheelScroll->delta > 0)
 				{
-					if (currentZoom > m_MinZoom)
+					if (m_CurrentZoom > m_MinZoom)
 					{
 						float zoomFactor = 0.9f;
-						if (currentZoom * zoomFactor < m_MinZoom)
+						if (m_CurrentZoom * zoomFactor < m_MinZoom)
 						{
-							zoomFactor = m_MinZoom / currentZoom;
+							zoomFactor = m_MinZoom / m_CurrentZoom;
 						}
 						m_View.zoom(zoomFactor);
 					}
 				}
 				else if (wheelScroll->delta < 0)
 				{
-
-					if (currentZoom < m_MaxZoom)
+					if (m_CurrentZoom < m_MaxZoom)
 					{
 						float zoomFactor = 1.1f;
-						if (currentZoom * zoomFactor > m_MaxZoom)
+						if (m_CurrentZoom * zoomFactor > m_MaxZoom)
 						{
-							zoomFactor = m_MaxZoom / currentZoom;
+							zoomFactor = m_MaxZoom / m_CurrentZoom;
 						}
 						m_View.zoom(zoomFactor);
 					}
@@ -198,6 +202,36 @@ void Application::Update(sf::Time deltaTime)
 		m_ActiveTool->Update(m_Window, m_View, *m_UI);
 
 	m_Canvas->Update(m_Window, m_View);
+
+	m_CurrentZoom = m_View.getSize().x / m_InitialViewSize.x;
+
+	if (m_UI->GetZoomIn())
+	{
+		if (m_CurrentZoom > m_MinZoom)
+		{
+			m_View.zoom(0.75f);
+			m_UI->SetZoomIn(false);
+		}
+	}
+	if (m_UI->GetZoomOut())
+	{
+		if (m_CurrentZoom < m_MaxZoom)
+		{
+			m_View.zoom(1.25f);
+			m_UI->SetZoomOut(false);
+		}
+	}
+
+	if (m_IsPanning)
+	{
+		sf::Vector2i currentMousePos = sf::Mouse::getPosition(m_Window);
+		sf::Vector2i delta = m_PanStartMousePos - currentMousePos;
+
+		// Scale pan speed according to zoom level
+		float panScale = m_View.getSize().x / m_InitialViewSize.x;
+
+		m_View.setCenter(m_PanStartViewCenter + sf::Vector2f(delta.x, delta.y) * panScale);
+	}
 
 }
 
