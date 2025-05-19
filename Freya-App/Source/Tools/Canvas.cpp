@@ -168,7 +168,7 @@ sf::RenderTexture& Canvas::GetRenderTexture()
 void Canvas::CreateTransparencyPattern()
 {
 	// Create a texture similar to a chessboard pattern
-	const int squareSize = 10; // Square size
+	const int squareSize = 8; // Square size
 	const int textureSize = squareSize * 2; // For 2x2 square
 
 	sf::Image patternImage({ textureSize, textureSize }, sf::Color(200, 200, 200));

@@ -89,6 +89,21 @@ void UI::HandleEvent(const sf::Event& event) {
                     m_Canvas->Undo();
                 }
             }
+
+            if (keyPressed->scancode == sf::Keyboard::Scancode::S && keyPressed->control)
+            {
+                if (m_LastProjectPath.empty() || !std::filesystem::exists(m_LastProjectPath)) {
+                    openSaveProjectDialog = true;
+                    m_ProjectDirectory = ProjectManager::GetDefaultProjectDirectory().string();
+                    m_ProjectFileName = ProjectManager::GenerateUniqueProjectName(m_ProjectDirectory, "MyProject");
+                }
+                else {
+                    if (!m_ProjectManager->SaveProject(m_LastProjectPath))
+                        ShowNotification(m_LanguageManager.Get("cant_save_project").c_str(), true);
+                    else
+                        ShowNotification(m_LanguageManager.Get("saved_project").c_str());
+                }
+            }
 	    }
     }
 }
@@ -524,7 +539,7 @@ void UI::ShowMainMenuBar() {
                 "shortcut"
             };
 
-            ImGui::BeginChild("LeftPane", ImVec2(150, size.y), true);
+            ImGui::BeginChild("LeftPanel", ImVec2(150, size.y), true);
             for (int i = 0; i < settings.size(); i++)
             {
 				if (ImGui::Selectable(m_LanguageManager.Get(settings[i]).c_str(), selectedSetting == i))
@@ -621,14 +636,13 @@ void UI::ShowMainMenuBar() {
 void UI::ShowColorPicker() {
     ImGuiIO& io = ImGui::GetIO();
 
-    const ImVec2 minSize = ImVec2(300, 250); // Minimum size for the toolbar
-    const ImVec2 maxSize = ImVec2(600, 550); // Maximum size for the toolbar
+    //const ImVec2 minSize = ImVec2(300, 250); // Minimum size for the toolbar
+    //const ImVec2 maxSize = ImVec2(600, 550); // Maximum size for the toolbar
     const ImVec2 defaultSize = ImVec2(340, 305); // Default window size
+    const ImVec2 desiredPos = ImVec2(0.0f, io.DisplaySize.y - defaultSize.y);
 
-    ImGui::SetNextWindowSizeConstraints(minSize, maxSize);
+	ImGui::SetNextWindowPos(desiredPos, ImGuiCond_FirstUseEver);
 
-	const ImVec2 desiredPos = ImVec2(0.0f, io.DisplaySize.y - defaultSize.y);
-	ImGui::SetNextWindowPos(desiredPos, ImGuiCond_FirstUseEver);	
     ImGui::SetNextWindowSize(defaultSize, ImGuiCond_FirstUseEver);
 
 	//ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);         // Corner roundness
@@ -642,8 +656,9 @@ void UI::ShowColorPicker() {
 	//ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0, 255, 0, 255));    // Border
 	//ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0, 0, 255, 255));    // Border
 
-    ImGui::Begin(m_LanguageManager.Get("color_picker_title").c_str(), nullptr, ImGuiWindowFlags_NoSavedSettings);
-
+    ImGui::Begin("color", nullptr, ImGuiWindowFlags_NoTitleBar);
+	ImGui::Text(m_LanguageManager.Get("color_picker_title").c_str());
+	ImGui::Separator();
 
     // Snap logic:
     ImVec2 pos = ImGui::GetWindowPos();
@@ -685,8 +700,7 @@ void UI::ShowToolPanel() {
 	ImGui::SetNextWindowSize(ImVec2(m_Window.getSize().x, fontSize * 3), ImGuiCond_Always);
 
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
-		ImGuiWindowFlags_NoSavedSettings;
+		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar;
 
 	ImGui::Begin("Toolbar", nullptr, flags);
 
@@ -730,8 +744,8 @@ void UI::ShowToolPanel() {
 
 void UI::ShowToolBar() {
     ImGuiIO& io = ImGui::GetIO();
-    const ImVec2 minSize = ImVec2(fontSize * 4.5f, 300); // Minimum size for the toolbar
-    const ImVec2 maxSize = ImVec2(200, 600); // Maximum size for the toolbar
+    //const ImVec2 minSize = ImVec2(fontSize * 4.5f, 300); // Minimum size for the toolbar
+    //const ImVec2 maxSize = ImVec2(200, 600); // Maximum size for the toolbar
     const ImVec2 defaultSize = ImVec2(fontSize * 4.5f, 300); // Default window size
 
     const float snapThreshold = 20.0f; // Snap threshold in pixels
@@ -741,7 +755,7 @@ void UI::ShowToolBar() {
                                     (io.DisplaySize.y - defaultSize.y) / 2);
     ImGui::SetNextWindowPos(desiredPos, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(defaultSize, ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSizeConstraints(minSize, maxSize);
+    //ImGui::SetNextWindowSizeConstraints(minSize, maxSize);
     
     //ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);         // Corner roundness
     //ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);        // Border thickness
@@ -756,8 +770,9 @@ void UI::ShowToolBar() {
 	
 
     // Create window with resize and collapse flags
-    ImGui::Begin(m_LanguageManager.Get("tool_title").c_str(), nullptr,
-                ImGuiWindowFlags_NoSavedSettings);
+    ImGui::Begin("tool", nullptr, ImGuiWindowFlags_NoTitleBar);
+    ImGui::Text(m_LanguageManager.Get("tool_title").c_str());
+	ImGui::Separator();
     
 	ImVec2 available = ImGui::GetContentRegionAvail();
 	float buttonWidth = available.x * 0.9f;
@@ -828,7 +843,6 @@ float UI::GetSpacing() {
 	return m_Spacing;
 }
 
-
 BrushType UI::GetBrushType() {
 	return m_BrushType;
 }
@@ -876,7 +890,6 @@ void UI::SetFontSize(int size) {
     io.Fonts->AddFontFromFileTTF("Source\\Assets\\Poppins-Regular.ttf", (float)fontSize, &font_cfg, glyph_ranges);
     ImGui::SFML::UpdateFontTexture();
 }
-
 
 std::string UI::GetLanguage()
 {
@@ -946,7 +959,6 @@ void UI::ExportImage()
         break;
     }
 
-    // You could add a notification system to inform the user of the export status
     if (success) {
         // Set a notification flag or add to a notification queue
         ShowNotification(m_LanguageManager.Get("export_success"));
@@ -1060,7 +1072,7 @@ std::string UI::ShowFileDialog()
     }
     else if (result == NFD_CANCEL)
     {
-        //printf("User pressed cancel.\n");
+
     }
     else
     {
@@ -1083,7 +1095,7 @@ std::string UI::ShowImageDialog()
 	}
 	else if (result == NFD_CANCEL)
 	{
-		//printf("User pressed cancel.\n");
+
 	}
 	else
 	{
@@ -1106,7 +1118,7 @@ std::string UI::ShowOpenFreyaDialog()
 
     }
     else {
-        printf("Hata: %s\n", NFD_GetError());
+        printf("Error: %s\n", NFD_GetError());
     }
 
     return resultPath;

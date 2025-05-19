@@ -65,7 +65,6 @@ namespace FRE {
 		Canvas* m_Canvas = nullptr;
 		std::unique_ptr<ProjectManager> m_ProjectManager;
 
-
 		unsigned int m_CanvasWidth;
 		unsigned int m_CanvasHeight;
 		int m_ResizeWidth;

@@ -5,6 +5,7 @@
 	"new": "New",
 	"open": "Open",
 	"save": "Save",
+	"save_as": "Save As",
 	"save_project": "Save Project",
 	"open_project": "Open Project",
 	"cant_save_project": "Project could not be saved.",

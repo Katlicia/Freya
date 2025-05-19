@@ -11,9 +11,10 @@ Application::Application() :
 {
 	// Get monitor resolution
 	desktop = sf::VideoMode::getDesktopMode();
-
+	sf::ContextSettings settings;
+	settings.antiAliasingLevel = 8;
 	m_Window = sf::RenderWindow(sf::VideoMode({ desktop.size.x, desktop.size.y }),
-		"Freya", sf::Style::Default);
+		"Freya", sf::Style::Default, sf::State::Windowed, settings);
 
 	m_View = sf::View(sf::FloatRect({ 0.f, 0.f },
 		{ static_cast<float>(desktop.size.x), static_cast<float>(desktop.size.y) }));
@@ -25,6 +26,7 @@ Application::Application() :
 	}
 
 	m_Window.setVerticalSyncEnabled(true);
+
 
 	m_LanguageManager = std::make_unique<LocalizationManager>();
 	m_Language = m_LanguageManager->GetSystemLanguage();
@@ -54,12 +56,13 @@ Application::Application() :
 	m_UI->SetLanguage(m_SettingsManager->Get("UserLanguage", m_Language));
 	m_UI->SetFontSize(std::stof(m_SettingsManager->Get("UserFontSize", std::to_string(m_UI->GetFontSize()))));
 
+
 	m_LastBrush = m_UI->GetBrushType();
 	m_ActiveTool = m_DrawingTool.get();
 	
 	m_InitialZoom = 1.f;
 	m_MaxZoom = 1.f;
-	m_MinZoom = 0.1f;
+	m_MinZoom = 0.01f;
 	m_InitialViewSize = m_View.getSize();
 }
 
@@ -144,40 +147,40 @@ void Application::ProcessEvents()
 		//}
 
 
-		//if (const auto* wheelScroll = event->getIf<sf::Event::MouseWheelScrolled>())
-		//{
-		//	if (wheelScroll->wheel == sf::Mouse::Wheel::Vertical)
-		//	{
-		//		// Calculate current zoom level based on the initial view size
-		//		float currentZoom = m_View.getSize().x / m_InitialViewSize.x;
+		if (const auto* wheelScroll = event->getIf<sf::Event::MouseWheelScrolled>())
+		{
+			if (wheelScroll->wheel == sf::Mouse::Wheel::Vertical)
+			{
+				// Calculate current zoom level based on the initial view size
+				float currentZoom = m_View.getSize().x / m_InitialViewSize.x;
 
-		//		if (wheelScroll->delta > 0)
-		//		{
-		//			if (currentZoom > m_MinZoom)
-		//			{
-		//				float zoomFactor = 0.9f;
-		//				if (currentZoom * zoomFactor < m_MinZoom)
-		//				{
-		//					zoomFactor = m_MinZoom / currentZoom;
-		//				}
-		//				m_View.zoom(zoomFactor);
-		//			}
-		//		}
-		//		else if (wheelScroll->delta < 0)
-		//		{
+				if (wheelScroll->delta > 0)
+				{
+					if (currentZoom > m_MinZoom)
+					{
+						float zoomFactor = 0.9f;
+						if (currentZoom * zoomFactor < m_MinZoom)
+						{
+							zoomFactor = m_MinZoom / currentZoom;
+						}
+						m_View.zoom(zoomFactor);
+					}
+				}
+				else if (wheelScroll->delta < 0)
+				{
 
-		//			if (currentZoom < m_MaxZoom)
-		//			{
-		//				float zoomFactor = 1.1f;
-		//				if (currentZoom * zoomFactor > m_MaxZoom)
-		//				{
-		//					zoomFactor = m_MaxZoom / currentZoom;
-		//				}
-		//				m_View.zoom(zoomFactor);
-		//			}
-		//		}
-		//	}
-		//}
+					if (currentZoom < m_MaxZoom)
+					{
+						float zoomFactor = 1.1f;
+						if (currentZoom * zoomFactor > m_MaxZoom)
+						{
+							zoomFactor = m_MaxZoom / currentZoom;
+						}
+						m_View.zoom(zoomFactor);
+					}
+				}
+			}
+		}
 	}
 }
 
