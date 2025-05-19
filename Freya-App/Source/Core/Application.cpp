@@ -11,10 +11,8 @@ Application::Application() :
 {
 	// Get monitor resolution
 	desktop = sf::VideoMode::getDesktopMode();
-	sf::ContextSettings settings;
-	settings.antiAliasingLevel = 8;
 	m_Window = sf::RenderWindow(sf::VideoMode({ desktop.size.x, desktop.size.y }),
-		"Freya", sf::Style::Default, sf::State::Windowed, settings);
+		"Freya", sf::Style::Default);
 
 	m_View = sf::View(sf::FloatRect({ 0.f, 0.f },
 		{ static_cast<float>(desktop.size.x), static_cast<float>(desktop.size.y) }));
