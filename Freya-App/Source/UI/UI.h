@@ -7,6 +7,7 @@
 #include "Tools/Canvas.h"
 #include <nfd.h>
 #include <filesystem>
+#include <Core/ProjectManager.h>
 
 namespace FRE {
 	class UI
@@ -47,6 +48,11 @@ namespace FRE {
 		std::string ShowFileDialog();
 		std::string ShowImageDialog();
 
+		std::string ShowOpenFreyaDialog();
+
+		std::string GetOpenedProjectName() const;
+
+
 	private:
 		void ShowMainMenuBar();
 		void ShowToolPanel();
@@ -57,6 +63,9 @@ namespace FRE {
 		sf::RenderWindow& m_Window;
 		LocalizationManager m_LanguageManager;
 		Canvas* m_Canvas = nullptr;
+		std::unique_ptr<ProjectManager> m_ProjectManager;
+
+
 		unsigned int m_CanvasWidth;
 		unsigned int m_CanvasHeight;
 		int m_ResizeWidth;
@@ -95,6 +104,14 @@ namespace FRE {
 			bool isError;
 		};
 		std::vector<Notification> m_Notifications;
+
+		// ProjectManager
+		bool openSaveProjectDialog = false;
+		std::string m_ProjectFileName = "MyProject";
+		std::string m_ProjectDirectory = ProjectManager::GetDefaultProjectDirectory().string();
+		std::string m_LastProjectPath = "";
+
+		std::string m_OpenedProjectName = "";
 
 	};
 }

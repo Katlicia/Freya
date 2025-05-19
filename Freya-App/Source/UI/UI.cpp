@@ -52,6 +52,7 @@ void UI::SetCanvas(Canvas* canvas) {
 	m_Canvas = canvas;
 	m_CanvasWidth = m_Canvas->GetSize().x;
 	m_CanvasHeight = m_Canvas->GetSize().y;
+    m_ProjectManager = std::make_unique<ProjectManager>(*canvas);
 }
 
 void UI::Update(sf::Time deltaTime) {
@@ -107,8 +108,39 @@ void UI::ShowMainMenuBar() {
         if (ImGui::BeginMenu(m_LanguageManager.Get("file").c_str()))
         {
             if (ImGui::MenuItem(m_LanguageManager.Get("new").c_str())) { /* ... */ }
-            if (ImGui::MenuItem(m_LanguageManager.Get("open").c_str())) {}
-            if (ImGui::MenuItem(m_LanguageManager.Get("save").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("save_project").c_str()))
+            {
+                if (m_LastProjectPath.empty() || !std::filesystem::exists(m_LastProjectPath)) {
+                    openSaveProjectDialog = true;
+                    m_ProjectDirectory = ProjectManager::GetDefaultProjectDirectory().string();
+                    m_ProjectFileName = ProjectManager::GenerateUniqueProjectName(m_ProjectDirectory, "MyProject");
+                }
+                else {
+                    if (!m_ProjectManager->SaveProject(m_LastProjectPath))
+                        ShowNotification(m_LanguageManager.Get("cant_save_project").c_str(), true);
+                    else
+                        ShowNotification(m_LanguageManager.Get("saved_project").c_str());
+                }
+            }
+            if (ImGui::MenuItem(m_LanguageManager.Get("open_project").c_str()))
+            {
+                std::string path = ShowOpenFreyaDialog();
+                if (!path.empty()) {
+                    if (!m_ProjectManager->LoadProject(path))
+                        ShowNotification(m_LanguageManager.Get("project_load_fail").c_str(), true);
+                    else
+                    {
+                        ShowNotification(m_LanguageManager.Get("project_load_success").c_str());
+                        m_LastProjectPath = path;
+                        m_OpenedProjectName = std::filesystem::path(path).filename().string();
+                    }
+                }
+            }
+            if (ImGui::MenuItem(m_LanguageManager.Get("save_as").c_str())) {
+                openSaveProjectDialog = true;
+                m_ProjectDirectory = ProjectManager::GetDefaultProjectDirectory().string();
+                m_ProjectFileName = ProjectManager::GenerateUniqueProjectName(m_ProjectDirectory, "MyProject");
+            }
             if (ImGui::MenuItem(m_LanguageManager.Get("import").c_str()))
             {
                 std::string selectedPath = ShowImageDialog();
@@ -225,6 +257,85 @@ void UI::ShowMainMenuBar() {
 
             ImGui::EndMenu();
         }
+
+        if (openSaveProjectDialog) {
+            ImGui::OpenPopup("SaveProjectPopup");
+            openSaveProjectDialog = false;
+        }
+
+        if (ImGui::BeginPopup("SaveProjectPopup")) {
+            ImGui::Text(m_LanguageManager.Get("save_project").c_str());
+            ImGui::Separator();
+
+            ImVec2 size(25 * fontSize, 10 * fontSize);
+            ImGui::BeginChild("SaveProjectPanel", size, true);
+
+            const float labelWidth = fontSize * 5;
+            const float inputWidth = 250.f;
+
+            ImGui::Text(m_LanguageManager.Get("file_name").c_str());
+            ImGui::SameLine(labelWidth);
+            ImGui::SetNextItemWidth(inputWidth);
+            static char nameBuffer[256];
+            strncpy(nameBuffer, m_ProjectFileName.c_str(), sizeof(nameBuffer));
+            if (ImGui::InputText("##ProjectName", nameBuffer, sizeof(nameBuffer))) {
+                m_ProjectFileName = nameBuffer;
+            }
+
+            ImGui::Text(m_LanguageManager.Get("file_path").c_str());
+            ImGui::SameLine(labelWidth);
+            ImGui::SetNextItemWidth(inputWidth);
+            static char dirBuffer[512];
+            strncpy(dirBuffer, m_ProjectDirectory.c_str(), sizeof(dirBuffer));
+            if (ImGui::InputText("##ProjectDir", dirBuffer, sizeof(dirBuffer))) {
+                m_ProjectDirectory = dirBuffer;
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button(m_LanguageManager.Get("browse").c_str())) {
+                std::string path = ShowFileDialog();
+                if (!path.empty())
+                    m_ProjectDirectory = path;
+            }
+
+            ImGui::EndChild();
+            ImGui::Separator();
+
+            // Save ve Cancel
+            if (ImGui::Button(m_LanguageManager.Get("cancel").c_str(), ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(m_LanguageManager.Get("save").c_str(), ImVec2(120, 0))) {
+                std::string finalPath;
+
+                if (m_ProjectDirectory.empty())
+                    finalPath = "./";
+                else {
+                    char lastChar = m_ProjectDirectory.back();
+                    if (lastChar != '/' && lastChar != '\\')
+                        m_ProjectDirectory += "/";
+                    finalPath = m_ProjectDirectory;
+                }
+
+                finalPath += m_ProjectFileName;
+                if (!finalPath.ends_with(".freya"))
+                    finalPath += ".freya";
+
+                if (!m_ProjectManager->SaveProject(finalPath)) {
+                    ShowNotification(m_LanguageManager.Get("cant_save_project").c_str(), true);
+                }
+                else {
+                    ShowNotification(m_LanguageManager.Get("saved_project").c_str());
+                    m_LastProjectPath = finalPath;
+                    m_OpenedProjectName = std::filesystem::path(finalPath).filename().string();
+                }
+
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+
 
         if (openResizeDialog) {
             ImGui::OpenPopup("ResizePopup");
@@ -920,10 +1031,26 @@ void UI::RenderNotifications() {
     }
 }
 
+void UI::ResizeCanvas(int width, int height)
+{
+    if (m_Canvas)
+    {
+        m_Canvas->SaveState();
+        if (width < 1 || height < 1 || width > 32768 || height > 32768)
+        {
+            ShowNotification(m_LanguageManager.Get("invalid_size"), true);
+            return;
+        }
+        m_Canvas->SetSize(width, height);
+        m_CanvasWidth = width;
+        m_CanvasHeight = height;
+    }
+}
+
 std::string UI::ShowFileDialog()
 {
     nfdchar_t* outPath = nullptr;
-    nfdresult_t result = NFD_PickFolder(nullptr, &outPath);
+    nfdresult_t result = NFD_PickFolder(m_ProjectDirectory.c_str(), &outPath);
 	
     std::string resultPath;
     if (result == NFD_OKAY && outPath)
@@ -965,18 +1092,27 @@ std::string UI::ShowImageDialog()
     return resultPath;
 }
 
-void UI::ResizeCanvas(int width, int height)
+std::string UI::ShowOpenFreyaDialog()
 {
-	if (m_Canvas)
-	{
-        m_Canvas->SaveState();
-		if (width < 1 || height < 1 || width > 32768 || height > 32768)
-		{
-			ShowNotification(m_LanguageManager.Get("invalid_size"), true);
-			return;
-		}
-		m_Canvas->SetSize(width, height);
-		m_CanvasWidth = width;
-		m_CanvasHeight = height;
-	}
+    nfdchar_t* outPath = nullptr;
+    nfdresult_t result = NFD_OpenDialog("freya", nullptr, &outPath);
+
+    std::string resultPath;
+    if (result == NFD_OKAY && outPath) {
+        resultPath = outPath;
+        free(outPath);
+    }
+    else if (result == NFD_CANCEL) {
+
+    }
+    else {
+        printf("Hata: %s\n", NFD_GetError());
+    }
+
+    return resultPath;
+}
+
+std::string UI::GetOpenedProjectName() const
+{
+	return m_OpenedProjectName;
 }

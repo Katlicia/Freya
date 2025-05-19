@@ -212,4 +212,5 @@ void Application::Render()
 	m_UI->Render(m_Window);
 
 	m_Window.display();
+	m_Window.setTitle("Freya - " + m_UI->GetOpenedProjectName());
 }
