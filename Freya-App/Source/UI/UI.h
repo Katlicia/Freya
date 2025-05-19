@@ -45,6 +45,7 @@ namespace FRE {
 		void RenderNotifications();
 
 		std::string ShowFileDialog();
+		std::string ShowImageDialog();
 
 	private:
 		void ShowMainMenuBar();

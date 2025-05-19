@@ -10,7 +10,7 @@ Canvas::Canvas()
 	{
 		throw std::runtime_error("Failed to create RenderTexture");
 	}
-	if (m_Transparant)
+	if (m_Transparent)
 	{
 		m_RenderTexture.clear(sf::Color(255, 255, 255, 0));
 	}
@@ -23,13 +23,13 @@ Canvas::Canvas()
 	CreateTransparencyPattern();
 }
 
-Canvas::Canvas(unsigned int width, unsigned height, bool transparant = false) : m_Size({ width, height }), m_Transparant(transparant)
+Canvas::Canvas(unsigned int width, unsigned height, bool transparant = false) : m_Size({ width, height }), m_Transparent(transparant)
 {
 	if (!m_RenderTexture.resize({ m_Size.x, m_Size.y }))
 	{
 		throw std::runtime_error("Failed to create RenderTexture");
 	}
-	if (m_Transparant)
+	if (m_Transparent)
 	{
 		m_RenderTexture.clear(sf::Color(255, 255, 255, 0));
 	}
@@ -106,7 +106,7 @@ void Canvas::SetSize(unsigned int width, unsigned int height)
 	if (!m_RenderTexture.resize({ m_Size.x, m_Size.y }))
 		throw std::runtime_error("Failed to resize RenderTexture");
 
-	if (m_Transparant)
+	if (m_Transparent)
 	{
 		m_RenderTexture.clear(sf::Color(255, 255, 255, 0));
 	}
@@ -208,6 +208,30 @@ void Canvas::DrawTransparencyPattern(sf::RenderTarget& target)
 	}
 }
 
+void Canvas::SetTransparent(bool transparent) {
+	m_Transparent = transparent;
+
+	sf::Texture oldTex = m_RenderTexture.getTexture();
+	sf::Image oldImg = oldTex.copyToImage();
+
+	if (m_Transparent) {
+		m_RenderTexture.clear(sf::Color(0, 0, 0, 0));
+	}
+	else {
+		m_RenderTexture.clear(sf::Color::White);
+	}
+
+	sf::Texture tmpTex;
+	tmpTex.loadFromImage(oldImg);
+	sf::Sprite tmpSpr(tmpTex);
+	m_RenderTexture.draw(tmpSpr);
+	m_RenderTexture.display();
+}
+
+bool Canvas::IsTransparent() const {
+	return m_Transparent;
+}
+
 void Canvas::SaveState()
 {
 	CanvasState state;
@@ -243,7 +267,7 @@ bool Canvas::Undo()
 		return false;
 	}
 
-	if (m_Transparant)
+	if (m_Transparent)
 	{
 		m_RenderTexture.clear(sf::Color(255, 255, 255, 0));
 	}

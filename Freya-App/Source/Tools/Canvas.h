@@ -24,6 +24,8 @@ namespace FRE {
 
 		void CreateTransparencyPattern();
 		void DrawTransparencyPattern(sf::RenderTarget& target);
+		void SetTransparent(bool transparent);
+		bool IsTransparent() const;
 
 		// Undo System
 		void SaveState();
@@ -32,6 +34,8 @@ namespace FRE {
 
 		void BeginDrawOperation();
 		void EndDrawOperation();
+
+		void Rotate90();
 
 
 	private:
@@ -42,7 +46,7 @@ namespace FRE {
 		sf::Texture m_TransparencyPatternTexture;
 		std::optional<sf::Sprite> m_TransparencyPatternSprite;
 		bool m_HasTransparencyPattern = false;
-		bool m_Transparant = false;
+		bool m_Transparent = false;
 
 		struct CanvasState {
 			sf::Image image;

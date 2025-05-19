@@ -1,4 +1,5 @@
 #include "UI.h"
+#include <iostream>
 
 using namespace FRE;
 
@@ -106,9 +107,64 @@ void UI::ShowMainMenuBar() {
         if (ImGui::BeginMenu(m_LanguageManager.Get("file").c_str()))
         {
             if (ImGui::MenuItem(m_LanguageManager.Get("new").c_str())) { /* ... */ }
-            if (ImGui::MenuItem(m_LanguageManager.Get("open").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("open").c_str())) {}
             if (ImGui::MenuItem(m_LanguageManager.Get("save").c_str())) { /* ... */ }
-            if (ImGui::MenuItem(m_LanguageManager.Get("import").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("import").c_str()))
+            {
+                std::string selectedPath = ShowImageDialog();
+                if (!selectedPath.empty())
+                {
+                    sf::Image image;
+                    if (image.loadFromFile(selectedPath))
+                    {
+                        // Save current state before loading new image
+                        m_Canvas->SaveState();
+
+                        // Set transparency mode if the image has transparency
+                        bool hasTransparency = false;
+
+                        // Check if image has any transparent pixels
+                        sf::Vector2u size = image.getSize();
+                        for (unsigned int x = 0; x < size.x && !hasTransparency; ++x) {
+                            for (unsigned int y = 0; y < size.y && !hasTransparency; ++y) {
+                                if (image.getPixel({ x, y }).a < 255) {
+                                    hasTransparency = true;
+                                }
+                            }
+                        }
+
+                        // If image has transparency, ensure canvas is in transparent mode
+                        if (hasTransparency) {
+                            m_Canvas->SetTransparent(true);
+                        }
+
+                        // Resize canvas to match the image dimensions
+                        m_Canvas->SetSize(image.getSize().x, image.getSize().y);
+
+                        // Convert Image to Texture
+                        sf::Texture texture;
+                        texture.loadFromImage(image);
+
+                        // Clear canvas with transparent color if needed
+                        if (hasTransparency) {
+                            m_Canvas->Clear(sf::Color(0, 0, 0, 0));
+                        }
+                        else {
+                            m_Canvas->Clear(sf::Color::White);
+                        }
+
+                        // Draw the loaded texture to the canvas's render texture
+                        sf::Sprite tempSprite(texture);
+                        m_Canvas->GetRenderTexture().draw(tempSprite);
+                        m_Canvas->Display(); // Make sure to display the render texture
+                    }
+                    else
+                    {
+                        // Handle loading error
+                        std::cerr << "Failed to load image: " << selectedPath << std::endl;
+                    }
+                }
+            }
             if (ImGui::MenuItem(m_LanguageManager.Get("export").c_str())) 
             {
                 openExportDialog = true;
@@ -147,7 +203,11 @@ void UI::ShowMainMenuBar() {
             }
             if (ImGui::MenuItem(m_LanguageManager.Get("horizontal_turn").c_str())) { /* ... */ }
             if (ImGui::MenuItem(m_LanguageManager.Get("vertical_turn").c_str())) { /* ... */ }
-            if (ImGui::MenuItem(m_LanguageManager.Get("90_clock_rotate").c_str())) { /* ... */ }
+            if (ImGui::MenuItem(m_LanguageManager.Get("90_clock_rotate").c_str())) 
+            {
+				//m_Canvas->Rotate90();
+
+            }
             if (ImGui::MenuItem(m_LanguageManager.Get("90_counterclock_rotate").c_str())) { /* ... */ }
             if (ImGui::MenuItem(m_LanguageManager.Get("180_rotate").c_str())) { /* ... */ }
 
@@ -852,7 +912,7 @@ std::string UI::ShowFileDialog()
 {
     nfdchar_t* outPath = nullptr;
     nfdresult_t result = NFD_PickFolder(nullptr, &outPath);
-
+	
     std::string resultPath;
     if (result == NFD_OKAY && outPath)
     {
@@ -861,7 +921,7 @@ std::string UI::ShowFileDialog()
     }
     else if (result == NFD_CANCEL)
     {
-        printf("User pressed cancel.\n");
+        //printf("User pressed cancel.\n");
     }
     else
     {
@@ -871,11 +931,33 @@ std::string UI::ShowFileDialog()
     return resultPath;
 }
 
+std::string UI::ShowImageDialog()
+{
+    nfdchar_t* outPath = nullptr;
+	nfdresult_t result = NFD_OpenDialog("png,jpg,bmp", nullptr, &outPath);
+
+    std::string resultPath;
+	if (result == NFD_OKAY && outPath)
+	{
+		resultPath = outPath;
+		free(outPath);
+	}
+	else if (result == NFD_CANCEL)
+	{
+		//printf("User pressed cancel.\n");
+	}
+	else
+	{
+		printf("Error: %s\n", NFD_GetError());
+	}
+    return resultPath;
+}
+
 void UI::ResizeCanvas(int width, int height)
 {
 	if (m_Canvas)
 	{
-        m_Canvas->BeginDrawOperation();
+        m_Canvas->SaveState();
 		if (width < 1 || height < 1 || width > 32768 || height > 32768)
 		{
 			ShowNotification(m_LanguageManager.Get("invalid_size"), true);
@@ -884,6 +966,5 @@ void UI::ResizeCanvas(int width, int height)
 		m_Canvas->SetSize(width, height);
 		m_CanvasWidth = width;
 		m_CanvasHeight = height;
-        m_Canvas->EndDrawOperation();
 	}
 }
