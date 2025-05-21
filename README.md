@@ -1,6 +1,8 @@
 # Freya
 
-Freya is a cross-platform paint application built using **C++**, **SFML 3.0**, and **ImGui**. It is designed with a modular architecture allowing for scalable, clean, and reusable code. The project uses [Premake](https://github.com/premake/premake-core) for build configuration and project file generation.
+Freya is a cross-platform paint application built using **C++**, **SFML 3**, and **ImGui**. It is designed with a modular architecture allowing for scalable, clean, and reusable code. The project uses [Premake](https://github.com/premake/premake-core) for build configuration and project file generation.
+
+![Freya Screenshot](Freya-App/screenshot.png)
 
 ## Features
 
@@ -39,7 +41,7 @@ Open the `Scripts/` directory and run the appropriate `Setup` script to generate
 On Windows: Open Freya.sln in Visual Studio and build the App project.
 On Linux: Run make in the root directory after generating files with gmake2.
 
-4. Entry point is under the App/Source/App.cpp if you run the project you should see the SFML Works! screen.
+4. Entry point is under the App/Source/App.cpp.
 
 ## Notes
 The default save path for projects is under the user's Documents/Freya Projects directory.
