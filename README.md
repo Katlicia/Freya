@@ -2,9 +2,6 @@
 
 Freya is a cross-platform paint application built using **C++**, **SFML 3.0**, and **ImGui**. It is designed with a modular architecture allowing for scalable, clean, and reusable code. The project uses [Premake](https://github.com/premake/premake-core) for build configuration and project file generation.
 
-![Screenshot](./path-to-image.png)
-
-
 ## Features
 
 - 🖌️ Drawing and erasing with adjustable brush size, spacing, and opacity  
@@ -50,8 +47,8 @@ Projects are stored as .freya binary files containing canvas state and pixel dat
 Exported images are saved independently of project files.
 
 ## Roadmap
-✅ Custom binary project format
-✅ Undo/Redo system
-✅ Canvas transformations
-🧪 More brush support (planned)
-🧪 Layer support (in the future)
+- ✅ Custom binary project format
+- ✅ Undo/Redo system
+- ✅ Canvas transformations
+- 🧪 More brush support (planned)
+- 🧪 Layer support (in the future)
